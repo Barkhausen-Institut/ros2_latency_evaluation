@@ -23,6 +23,9 @@ find_package(std_msgs REQUIRED)
 add_executable(start_node src/start_node.cpp)
 ament_target_dependencies(start_node rclcpp std_msgs)
 
+add_executable(end_node src/end_node.cpp)
+ament_target_dependencies(end_node rclcpp std_msgs)
+
 install(TARGETS
     start_node
     DESTINATION lib/${PROJECT_NAME})
