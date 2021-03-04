@@ -7,7 +7,7 @@ using namespace std::chrono_literals;
 class FirstNode : public rclcpp::Node {
     public:
         FirstNode() : Node("first_node") {
-            publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+            publisher_ = this->create_publisher<std_msgs::msg::String>("/first_pub_topic", 10);
             timer_ = this->create_wall_timer(
                 500ms, std::bind(&FirstNode::timer_callback, this));
         }
