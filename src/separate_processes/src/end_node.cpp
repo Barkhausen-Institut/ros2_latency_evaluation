@@ -1,5 +1,7 @@
 #include <chrono>
 #include <ctime>
+#include <vector>
+#include <tuple>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ping_pong_interfaces/msg/ping_pong.hpp"
@@ -18,12 +20,25 @@ class EndNode : public rclcpp::Node {
     
 
     private:
-        void onPong(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) const {
-            auto now = get_timestamp();
-            RCLCPP_INFO(this->get_logger(), "PING: %s", std::to_string(msg->ping_timestamp).c_str());
-            RCLCPP_INFO(this->get_logger(), "PONG: %s", std::to_string(msg->pong_timestamp).c_str());
+        void onPong(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) {
+            auto pong_received_timestamp = get_timestamp();
+            uint64_t msg_delay = pong_received_timestamp - msg->ping_timestamp;
+            delays_in_ms_.push_back(msg_delay/1000);
+
+            double meanSamples = mean(delays_in_ms_);
+            double varianceSamples = variance(delays_in_ms_);
+
+            stats_.push_back(std::make_tuple(meanSamples, varianceSamples));
+    
+            RCLCPP_INFO(this->get_logger(), "Updated mean of latency in ms: %s", 
+                std::to_string(meanSamples).c_str());
+            RCLCPP_INFO(this->get_logger(), "Updated Variance of latency in ms: %s", 
+                std::to_string(varianceSamples).c_str());
         }
         rclcpp::Subscription<ping_pong_interfaces::msg::PingPong>::SharedPtr subscription_;
+
+        std::vector<uint64_t> delays_in_ms_;
+        std::vector<std::tuple<double, double>> stats_;
 };
 
 int main(int argc, char* argv[]) {
