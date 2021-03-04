@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ping_pong)
+project(separate_processes)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
