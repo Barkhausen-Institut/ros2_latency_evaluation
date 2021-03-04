@@ -25,12 +25,17 @@ add_executable(start_node src/start_node.cpp)
 ament_target_dependencies(start_node rclcpp std_msgs ping_pong_interfaces)
 target_include_directories(start_node PRIVATE include/ping_pong/)
 
+add_executable(intermediate_node src/intermediate_node.cpp)
+ament_target_dependencies(intermediate_node rclcpp std_msgs ping_pong_interfaces)
+target_include_directories(intermediate_node PRIVATE include/ping_pong/)
+
 add_executable(end_node src/end_node.cpp)
 ament_target_dependencies(end_node rclcpp std_msgs ping_pong_interfaces)
 target_include_directories(end_node PRIVATE include/ping_pong/)
 
 install(TARGETS
     start_node
+    intermediate_node
     end_node
     DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
