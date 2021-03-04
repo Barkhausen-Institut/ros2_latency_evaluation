@@ -4,14 +4,14 @@
 #include "std_msgs/msg/string.hpp"
 
 using namespace std::chrono_literals;
-class FirstNode : public rclcpp::Node {
+class StartNode : public rclcpp::Node {
     public:
-        FirstNode() : Node("first_node") {
-            publisher_ = this->create_publisher<std_msgs::msg::String>("/first_pub_topic", 10);
+        StartNode() : Node("start_node") {
+            publisher_ = this->create_publisher<std_msgs::msg::String>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
-                500ms, std::bind(&FirstNode::timer_callback, this));
+                500ms, std::bind(&StartNode::timer_callback, this));
             subscription_ = this->create_subscription<std_msgs::msg::String>(
-                "/first_sub_topic", 10, std::bind(&FirstNode::onPong, this, std::placeholders::_1)
+                "/start_sub_topic", 10, std::bind(&StartNode::onPong, this, std::placeholders::_1)
             );
         }
     
@@ -33,7 +33,7 @@ class FirstNode : public rclcpp::Node {
 
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<FirstNode>());
+    rclcpp::spin(std::make_shared<StartNode>());
     rclcpp::shutdown();
     return 0;
 }
