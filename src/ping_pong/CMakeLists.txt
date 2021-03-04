@@ -19,13 +19,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(ping_pong_interfaces REQUIRED)
 
 add_executable(start_node src/start_node.cpp)
-ament_target_dependencies(start_node rclcpp std_msgs)
+ament_target_dependencies(start_node rclcpp std_msgs ping_pong_interfaces)
 target_include_directories(start_node PRIVATE include/ping_pong/)
 
 add_executable(end_node src/end_node.cpp)
-ament_target_dependencies(end_node rclcpp std_msgs)
+ament_target_dependencies(end_node rclcpp std_msgs ping_pong_interfaces)
 target_include_directories(end_node PRIVATE include/ping_pong/)
 
 install(TARGETS

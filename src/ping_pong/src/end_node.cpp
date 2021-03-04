@@ -2,7 +2,8 @@
 #include <ctime>
 
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/u_int64.hpp"
+#include "ping_pong_interfaces/msg/ping_pong.hpp"
+
 
 #include "utils.hpp"
 
@@ -10,23 +11,21 @@ using namespace std::chrono_literals;
 class EndNode : public rclcpp::Node {
     public:
         EndNode() : Node("end_node") {
-            publisher_ = this->create_publisher<std_msgs::msg::UInt64>("/start_sub_topic", 10);
-            subscription_ = this->create_subscription<std_msgs::msg::UInt64>(
+            publisher_ = this->create_publisher<ping_pong_interfaces::msg::PingPong>("/start_sub_topic", 10);
+            subscription_ = this->create_subscription<ping_pong_interfaces::msg::PingPong>(
                 "/start_pub_topic", 10, std::bind(&EndNode::onPing, this, std::placeholders::_1)
             );
         }
     
 
     private:
-        void onPing(const std_msgs::msg::UInt64::SharedPtr msg) const {
-            auto pubMsg = std_msgs::msg::UInt64();
+        void onPing(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) const {
             auto now = get_timestamp();
-            pubMsg.data = now;
-            publisher_->publish(pubMsg);
-            RCLCPP_INFO(this->get_logger(), "Publishing %s", std::to_string(pubMsg.data).c_str());
+            msg->pong_timestamp = now;
+            publisher_->publish(*msg);
         }
-        rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr publisher_;
-        rclcpp::Subscription<std_msgs::msg::UInt64>::SharedPtr subscription_;
+        rclcpp::Publisher<ping_pong_interfaces::msg::PingPong>::SharedPtr publisher_;
+        rclcpp::Subscription<ping_pong_interfaces::msg::PingPong>::SharedPtr subscription_;
 };
 
 int main(int argc, char* argv[]) {
