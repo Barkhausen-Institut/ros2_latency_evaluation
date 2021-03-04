@@ -11,7 +11,6 @@ using namespace std::chrono_literals;
 class EndNode : public rclcpp::Node {
     public:
         EndNode() : Node("end_node") {
-            publisher_ = this->create_publisher<ping_pong_interfaces::msg::PingPong>("/start_sub_topic", 10);
             subscription_ = this->create_subscription<ping_pong_interfaces::msg::PingPong>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPing, this, std::placeholders::_1)
             );
@@ -24,7 +23,6 @@ class EndNode : public rclcpp::Node {
             RCLCPP_INFO(this->get_logger(), "PING: %s", std::to_string(msg->ping_timestamp).c_str());
             RCLCPP_INFO(this->get_logger(), "PONG: %s", std::to_string(msg->pong_timestamp).c_str());
         }
-        rclcpp::Publisher<ping_pong_interfaces::msg::PingPong>::SharedPtr publisher_;
         rclcpp::Subscription<ping_pong_interfaces::msg::PingPong>::SharedPtr subscription_;
 };
 
