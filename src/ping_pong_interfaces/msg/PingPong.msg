@@ -1,2 +1,1 @@
 uint64 ping_timestamp
-uint64 pong_timestamp

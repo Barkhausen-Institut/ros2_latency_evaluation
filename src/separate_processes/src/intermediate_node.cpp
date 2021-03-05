@@ -18,9 +18,8 @@ class IntermediateNode : public rclcpp::Node {
 
     private:
         void onPing(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) const {
-            auto now = get_timestamp();
-            msg->pong_timestamp = now;
             publisher_->publish(*msg);
+	    RCLCPP_INFO(this->get_logger(), "I received a msg");
         }
         rclcpp::Publisher<ping_pong_interfaces::msg::PingPong>::SharedPtr publisher_;
         rclcpp::Subscription<ping_pong_interfaces::msg::PingPong>::SharedPtr subscription_;

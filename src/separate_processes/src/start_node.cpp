@@ -23,6 +23,7 @@ class StartNode : public rclcpp::Node {
             auto now = get_timestamp();
             msg.ping_timestamp = now;
             publisher_->publish(msg);
+	    RCLCPP_INFO(this->get_logger(), "Published msg");
         }
         rclcpp::TimerBase::SharedPtr timer_;
         rclcpp::Publisher<ping_pong_interfaces::msg::PingPong>::SharedPtr publisher_;
