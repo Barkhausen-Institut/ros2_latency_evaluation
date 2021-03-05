@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="separate_processes" exec="start_node" output="screen" />
+    <node pkg="separate_processes" exec="intermediate_node" output="screen" />
+    <node pkg="separate_processes" exec="end_node" output="screen" />
+</launch>
