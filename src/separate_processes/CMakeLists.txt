@@ -33,10 +33,15 @@ add_executable(end_node src/end_node.cpp)
 ament_target_dependencies(end_node rclcpp std_msgs ping_pong_interfaces)
 target_include_directories(end_node PRIVATE include/separate_processes/)
 
+add_executable(all_nodes_same_context src/all_nodes_same_context.cpp)
+ament_target_dependencies(all_nodes_same_context rclcpp std_msgs ping_pong_interfaces)
+target_include_directories(all_nodes_same_context PRIVATE include/separate_processes/)
+
 install(TARGETS
     start_node
     intermediate_node
     end_node
+    all_nodes_same_context
     DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
