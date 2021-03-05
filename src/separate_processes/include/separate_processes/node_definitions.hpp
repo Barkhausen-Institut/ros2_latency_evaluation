@@ -11,7 +11,7 @@
 using namespace std::chrono_literals;
 class StartNode : public rclcpp::Node {
     public:
-        StartNode() : Node("start_node") {
+        StartNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) {
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::PingPong>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
                 100ms, std::bind(&StartNode::timer_callback, this));
@@ -31,7 +31,7 @@ class StartNode : public rclcpp::Node {
 
 class IntermediateNode : public rclcpp::Node {
     public:
-        IntermediateNode() : Node("intermediate_node") {
+        IntermediateNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt) {
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::PingPong>("/end_sub_topic", 10);
             subscription_ = this->create_subscription<ping_pong_interfaces::msg::PingPong>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
@@ -50,7 +50,7 @@ class IntermediateNode : public rclcpp::Node {
 
 class EndNode : public rclcpp::Node {
     public:
-        EndNode() : Node("end_node") {
+        EndNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt) {
             subscription_ = this->create_subscription<ping_pong_interfaces::msg::PingPong>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
             );
