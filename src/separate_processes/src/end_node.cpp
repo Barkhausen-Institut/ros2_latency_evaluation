@@ -23,7 +23,7 @@ class EndNode : public rclcpp::Node {
     private:
         void onPong(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) {
     	    noMsgs_++;
-	    if (noMsgs_ > 10) {
+	    if (noMsgs_ > 30) {
                 auto pong_received_timestamp = get_timestamp();
 	        uint64_t msg_delay = pong_received_timestamp - msg->ping_timestamp;
             	delays_in_ms_.push_back(msg_delay/1000);
