@@ -21,7 +21,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 set (CUSTOM_MSGS
     "msg/PingPong.msg"
-    "msg/PerformanceHeader.msg"
+    "msg/MetaInfo.msg"
     "msg/Stamped100b.msg"
     "msg/Stamped1kb.msg"
     "msg/Stamped10kb.msg"

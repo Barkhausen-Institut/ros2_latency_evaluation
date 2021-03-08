@@ -4,7 +4,7 @@
 #include <tuple>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ping_pong_interfaces/msg/ping_pong.hpp"
+#include "ping_pong_interfaces/msg/stamped100b.hpp"
 
 #include "utils.hpp"
 
@@ -12,57 +12,57 @@ using namespace std::chrono_literals;
 class StartNode : public rclcpp::Node {
     public:
         StartNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) {
-            publisher_ = this->create_publisher<ping_pong_interfaces::msg::PingPong>("/start_pub_topic", 10);
+            publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
                 100ms, std::bind(&StartNode::timer_callback, this));
         }
     
     private:
         void timer_callback() {
-            auto msg = ping_pong_interfaces::msg::PingPong();
+            auto msg = ping_pong_interfaces::msg::Stamped100b();
             auto now = get_timestamp();
-            msg.ping_timestamp = now;
+            msg.info.timestamp = now;
             publisher_->publish(msg);
             RCLCPP_INFO(this->get_logger(), "Published msg");
         }
         rclcpp::TimerBase::SharedPtr timer_;
-        rclcpp::Publisher<ping_pong_interfaces::msg::PingPong>::SharedPtr publisher_;
+        rclcpp::Publisher<ping_pong_interfaces::msg::Stamped100b>::SharedPtr publisher_;
 };
 
 class IntermediateNode : public rclcpp::Node {
     public:
         IntermediateNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt) {
-            publisher_ = this->create_publisher<ping_pong_interfaces::msg::PingPong>("/end_sub_topic", 10);
-            subscription_ = this->create_subscription<ping_pong_interfaces::msg::PingPong>(
+            publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/end_sub_topic", 10);
+            subscription_ = this->create_subscription<ping_pong_interfaces::msg::Stamped100b>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
             );
         }
 
 
     private:
-        void onPing(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) const {
+        void onPing(const ping_pong_interfaces::msg::Stamped100b::SharedPtr msg) const {
             publisher_->publish(*msg);
             RCLCPP_INFO(this->get_logger(), "I received a msg");
         }
-        rclcpp::Publisher<ping_pong_interfaces::msg::PingPong>::SharedPtr publisher_;
-        rclcpp::Subscription<ping_pong_interfaces::msg::PingPong>::SharedPtr subscription_;
+        rclcpp::Publisher<ping_pong_interfaces::msg::Stamped100b>::SharedPtr publisher_;
+        rclcpp::Subscription<ping_pong_interfaces::msg::Stamped100b>::SharedPtr subscription_;
 };
 
 class EndNode : public rclcpp::Node {
     public:
         EndNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt) {
-            subscription_ = this->create_subscription<ping_pong_interfaces::msg::PingPong>(
+            subscription_ = this->create_subscription<ping_pong_interfaces::msg::Stamped100b>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
             );
         noMsgs_ = 0;
         }
 
     private:
-        void onPong(const ping_pong_interfaces::msg::PingPong::SharedPtr msg) {
+        void onPong(const ping_pong_interfaces::msg::Stamped100b::SharedPtr msg) {
             noMsgs_++;
             if (noMsgs_ > 30) {
                 auto pong_received_timestamp = get_timestamp();
-                uint64_t msg_delay = pong_received_timestamp - msg->ping_timestamp;
+                uint64_t msg_delay = pong_received_timestamp - msg->info.timestamp;
                 delays_in_ms_.push_back(msg_delay/1000);
 
                 double meanSamples = mean(delays_in_ms_);
@@ -78,7 +78,7 @@ class EndNode : public rclcpp::Node {
                 RCLCPP_INFO(this->get_logger(), "Msgs: %s", std::to_string(noMsgs_).c_str());
             }
         }
-        rclcpp::Subscription<ping_pong_interfaces::msg::PingPong>::SharedPtr subscription_;
+        rclcpp::Subscription<ping_pong_interfaces::msg::Stamped100b>::SharedPtr subscription_;
 
         std::vector<uint64_t> delays_in_ms_;
         std::vector<std::tuple<double, double>> stats_;
