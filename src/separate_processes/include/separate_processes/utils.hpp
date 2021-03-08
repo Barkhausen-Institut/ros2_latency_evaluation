@@ -29,7 +29,7 @@ static uint64_t get_timestamp() {
   time_t sec;
   struct timespec spec;
 
-  clock_gettime(CLOCK_MONOTONIC, &spec);
+  clock_gettime(CLOCK_MONOTONIC_RAW, &spec);
   sec = spec.tv_sec;
   ns = spec.tv_nsec;
 
