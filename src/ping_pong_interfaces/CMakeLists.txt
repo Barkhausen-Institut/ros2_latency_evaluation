@@ -19,8 +19,18 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-    "msg/PingPong.msg")
+set (CUSTOM_MSGS
+    "msg/PingPong.msg"
+    "msg/PerformanceHeader.msg"
+    "msg/Stamped100b.msg"
+    "msg/Stamped1kb.msg"
+    "msg/Stamped10kb.msg"
+    "msg/Stamped100kb.msg"
+    "msg/Stamped500kb.msg")
+
+    rosidl_generate_interfaces(${PROJECT_NAME}
+    ${CUSTOM_MSGS}
+)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
