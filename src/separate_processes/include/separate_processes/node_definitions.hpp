@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <ctime>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ping_pong_interfaces/msg/stamped100b.hpp"
@@ -15,12 +16,13 @@ class StartNode : public rclcpp::Node {
             float pubFrequency,
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) 
         {
-            float pubPeriodMs = 1/pubFrequency * 100;
+            uint32_t pubPeriodMs = static_cast<uint32_t>(1/pubFrequency * 100);
             RCLCPP_INFO(this->get_logger(), "Publishing at rate %s", std::to_string(pubPeriodMs).c_str());
             RCLCPP_INFO(this->get_logger(), "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
-                100ms, std::bind(&StartNode::timer_callback, this));
+                std::chrono::milliseconds(pubPeriodMs),
+                std::bind(&StartNode::timer_callback, this));
         }
     
     private:
