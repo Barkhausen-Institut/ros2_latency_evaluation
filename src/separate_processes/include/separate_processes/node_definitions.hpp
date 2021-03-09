@@ -11,7 +11,13 @@
 using namespace std::chrono_literals;
 class StartNode : public rclcpp::Node {
     public:
-        StartNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) {
+        StartNode(
+            float pubFrequency,
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) 
+        {
+            float pubPeriodMs = 1/pubFrequency * 100;
+            RCLCPP_INFO(this->get_logger(), "Publishing at rate %s", std::to_string(pubPeriodMs).c_str());
+            RCLCPP_INFO(this->get_logger(), "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
                 100ms, std::bind(&StartNode::timer_callback, this));
