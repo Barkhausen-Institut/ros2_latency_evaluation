@@ -4,14 +4,11 @@
 #include <thread>
 
 int main(int argc, char* argv[]) {
-    float pubFreq = 1.;
 
-    if (argc > 1) {
-        pubFreq = atof(argv[1]);
-    }
+    Arguments args = parseArgs(argc, argv);
     rclcpp::init(argc, argv);
 
-    auto startNode = std::make_shared<StartNode>(pubFreq);
+    auto startNode = std::make_shared<StartNode>(args.pubFreq);
     auto interNode = std::make_shared<IntermediateNode>();
     auto endNode = std::make_shared<EndNode>();
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <chrono>
 #include <string>
 #include <vector>
@@ -17,7 +19,7 @@ class StartNode : public rclcpp::Node {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) 
         {
             uint32_t pubPeriodMs = static_cast<uint32_t>(1/pubFrequency * 1000);
-            RCLCPP_INFO(this->get_logger(), "Publishing every %s msg", std::to_string(pubPeriodMs).c_str());
+            RCLCPP_INFO(this->get_logger(), "Publishing every %s ms", std::to_string(pubPeriodMs).c_str());
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
                 std::chrono::milliseconds(pubPeriodMs),
