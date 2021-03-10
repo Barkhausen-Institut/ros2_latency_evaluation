@@ -1,3 +1,5 @@
+#pragma once
+
 #include <time.h>
 #include <vector>
 #include <numeric>
@@ -23,7 +25,21 @@ double variance(std::vector<uint64_t> samples) {
     return (sqSum/(samples.size()-1) - samplesMean * samplesMean);
 }
 
-static uint64_t get_timestamp() {
+struct Arguments {
+    float pubFreq = 1.;
+};
+
+Arguments parseArgs(int argc, char* argv[]) {
+    Arguments args;
+
+    if (argc > 1) {
+        args.pubFreq = atof(argv[1]);
+    }
+
+    return args;
+}
+
+/*static uint64_t get_timestamp() {
   long int ns;
   uint64_t all;
   time_t sec;
@@ -36,4 +52,4 @@ static uint64_t get_timestamp() {
   all = (uint64_t) sec * 1000000000UL + (uint64_t) ns;
 
   return all;
-}
+}*/

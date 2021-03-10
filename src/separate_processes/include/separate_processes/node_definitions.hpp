@@ -1,7 +1,10 @@
+#pragma once
+
 #include <chrono>
 #include <string>
 #include <vector>
 #include <tuple>
+#include <ctime>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ping_pong_interfaces/msg/stamped100b.hpp"
@@ -11,10 +14,16 @@
 using namespace std::chrono_literals;
 class StartNode : public rclcpp::Node {
     public:
-        StartNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) {
+        StartNode(
+            float pubFrequency,
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) 
+        {
+            uint32_t pubPeriodMs = static_cast<uint32_t>(1/pubFrequency * 1000);
+            RCLCPP_INFO(this->get_logger(), "Publishing every %d ms", pubPeriodMs);
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
-                100ms, std::bind(&StartNode::timer_callback, this));
+                std::chrono::milliseconds(pubPeriodMs),
+                std::bind(&StartNode::timer_callback, this));
         }
     
     private:
