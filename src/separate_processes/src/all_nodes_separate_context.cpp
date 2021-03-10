@@ -4,6 +4,8 @@
 #include <thread>
 
 int main(int argc, char* argv[]) {
+
+
     rclcpp::init(argc, argv);
 
     auto contextStartNode = std::make_shared<rclcpp::Context>();
@@ -22,9 +24,9 @@ int main(int argc, char* argv[]) {
     rclcpp::NodeOptions optEndNode = rclcpp::NodeOptions();
     optEndNode.context(contextEndNode);
 
-    auto startNode = std::make_shared<StartNode>(optStartNode);
-    auto interNode = std::make_shared<IntermediateNode>(optInterNode);
-    auto endNode = std::make_shared<EndNode>(optEndNode);
+    auto startNode = createNode<StartNode>("100b", optStartNode);
+    auto interNode = createNode<IntermediateNode>("100b", optInterNode);
+    auto endNode = createNode<EndNode>("100b", optEndNode);
 
     auto exStartNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
     auto exInterNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();

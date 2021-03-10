@@ -6,9 +6,9 @@
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
 
-    auto startNode = std::make_shared<StartNode>();
-    auto interNode = std::make_shared<IntermediateNode>();
-    auto endNode = std::make_shared<EndNode>();
+    auto startNode = createNode<StartNode>("100b");
+    auto interNode = createNode<IntermediateNode>("100b");
+    auto endNode = createNode<EndNode>("100b");
 
     auto exStartNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
     auto exInterNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
