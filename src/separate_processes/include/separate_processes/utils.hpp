@@ -1,7 +1,8 @@
+#pragma once
+
 #include <time.h>
 #include <vector>
 #include <numeric>
-
 
 double mean(std::vector<uint64_t> samples) {
     if (samples.size() == 0)
@@ -17,13 +18,14 @@ double variance(std::vector<uint64_t> samples) {
 
     double samplesMean = mean(samples);
     double sqSum = 0;
-    for (int i = 0; i < samples.size(); i++) {
+    for (size_t i = 0; i < samples.size(); i++) {
         sqSum += (samples.at(i) * samples.at(i));
     }
     return (sqSum/(samples.size()-1) - samplesMean * samplesMean);
 }
 
-static uint64_t get_timestamp() {
+
+/*static uint64_t get_timestamp() {
   long int ns;
   uint64_t all;
   time_t sec;
@@ -36,4 +38,4 @@ static uint64_t get_timestamp() {
   all = (uint64_t) sec * 1000000000UL + (uint64_t) ns;
 
   return all;
-}
+}*/

@@ -1,7 +1,10 @@
+#pragma once
+
 #include <chrono>
 #include <string>
 #include <vector>
 #include <tuple>
+#include <ctime>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ping_pong_interfaces/msg/stamped100b.hpp"
@@ -11,16 +14,24 @@
 #include "ping_pong_interfaces/msg/stamped500kb.hpp"
 
 #include "utils.hpp"
+#include "eval_args.hpp"
 
 using namespace std::chrono_literals;
 
 template <class MsgType>
 class StartNode : public rclcpp::Node {
     public:
-        StartNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) {
+        StartNode(
+            const EvalArgs& args,
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) 
+        {
+            args_ = args;
+            uint32_t pubPeriodMs = static_cast<uint32_t>(1/args_.pubFrequency * 1000);
+            RCLCPP_INFO(this->get_logger(), "Publishing every %d ms", pubPeriodMs);
             publisher_ = this->create_publisher<MsgType>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
-                100ms, std::bind(&StartNode::timer_callback, this));
+                std::chrono::milliseconds(pubPeriodMs),
+                std::bind(&StartNode::timer_callback, this));
         }
     
     private:
@@ -33,12 +44,16 @@ class StartNode : public rclcpp::Node {
         }
         rclcpp::TimerBase::SharedPtr timer_;
         typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
+        EvalArgs args_;
 };
 
 template <class MsgType>
 class IntermediateNode : public rclcpp::Node {
     public:
-        IntermediateNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt) {
+        IntermediateNode(
+            const EvalArgs& args,
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt) 
+        {
             publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
             subscription_ = this->create_subscription<MsgType>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
@@ -58,7 +73,10 @@ class IntermediateNode : public rclcpp::Node {
 template <class MsgType>
 class EndNode : public rclcpp::Node {
     public:
-        EndNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt) {
+        EndNode(
+            const EvalArgs& args,
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt) 
+        {
             subscription_ = this->create_subscription<MsgType>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
             );
@@ -96,18 +114,18 @@ class EndNode : public rclcpp::Node {
 using namespace ping_pong_interfaces::msg;
 template <template<class> class NodeType>
 std::shared_ptr<rclcpp::Node> createNode(
-    const std::string& msgType,
+    const EvalArgs& args,
     const rclcpp::NodeOptions& nodeOpts = rclcpp::NodeOptions()) {
-    if (msgType == "100b") 
-        return std::make_shared<NodeType<Stamped100b>>(nodeOpts);
-    else if (msgType == "1kb") 
-        return std::make_shared<NodeType<Stamped1kb>>(nodeOpts);
-    else if (msgType == "10kb")
-        return std::make_shared<NodeType<Stamped10kb>>(nodeOpts);
-    else if (msgType == "100kb")
-        return std::make_shared<NodeType<Stamped100kb>>(nodeOpts);
-    else if (msgType == "500kb")
-        return std::make_shared<NodeType<Stamped500kb>>(nodeOpts);
+    if (args.msgSize == "100b") 
+        return std::make_shared<NodeType<Stamped100b>>(args, nodeOpts);
+    else if (args.msgSize == "1kb") 
+        return std::make_shared<NodeType<Stamped1kb>>(args, nodeOpts);
+    else if (args.msgSize == "10kb")
+        return std::make_shared<NodeType<Stamped10kb>>(args, nodeOpts);
+    else if (args.msgSize == "100kb")
+        return std::make_shared<NodeType<Stamped100kb>>(args, nodeOpts);
+    else if (args.msgSize == "500kb")
+        return std::make_shared<NodeType<Stamped500kb>>(args, nodeOpts);
     else 
-        return std::make_shared<NodeType<Stamped100b>>(nodeOpts);
+        return std::make_shared<NodeType<Stamped100b>>(args, nodeOpts);
 }

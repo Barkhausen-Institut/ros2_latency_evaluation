@@ -1,7 +1,11 @@
 #include "node_definitions.hpp"
+#include "eval_args.hpp"
 
 int main(int argc, char* argv[]) {
-    auto node = createNode<StartNode>("100b");
+    EvalArgs args(argc, argv);
+    args.print();
+
+    auto node = createNode<StartNode>(args);
     rclcpp::init(argc, argv);
     rclcpp::spin(node);
     rclcpp::shutdown();

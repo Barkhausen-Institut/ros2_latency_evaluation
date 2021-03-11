@@ -1,11 +1,12 @@
-#include "node_definitions.hpp"
 #include <iostream>
-
 #include <thread>
 
+#include "node_definitions.hpp"
+#include "eval_args.hpp"
+
 int main(int argc, char* argv[]) {
-
-
+    EvalArgs args(argc, argv);
+    args.print();
     rclcpp::init(argc, argv);
 
     auto contextStartNode = std::make_shared<rclcpp::Context>();
@@ -24,9 +25,9 @@ int main(int argc, char* argv[]) {
     rclcpp::NodeOptions optEndNode = rclcpp::NodeOptions();
     optEndNode.context(contextEndNode);
 
-    auto startNode = createNode<StartNode>("100b", optStartNode);
-    auto interNode = createNode<IntermediateNode>("100b", optInterNode);
-    auto endNode = createNode<EndNode>("100b", optEndNode);
+    auto startNode = createNode<StartNode>(args, optStartNode);
+    auto interNode = createNode<IntermediateNode>(args, optInterNode);
+    auto endNode = createNode<EndNode>(args, optEndNode);
 
     auto exStartNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
     auto exInterNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
