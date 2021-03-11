@@ -17,6 +17,7 @@ class EvalArgs {
 
         void parse (int argc, char* argv[]) {
             cxxopts::Options options(argv[0], "ROS2 performance benchmark in separate processes");
+            options.allow_unrecognised_options();
             options.add_options()
                 ("n,no-nodes", "Number of Nodes",
                     cxxopts::value<uint>(noNodes))
