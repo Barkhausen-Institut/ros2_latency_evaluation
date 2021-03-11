@@ -21,8 +21,14 @@ class EvalArgs {
                     cxxopts::value<uint>(noNodes))
                 ("f,publisher-frequency", "Publisher Frequency of start node",
                     cxxopts::value<float>(pubFrequency))
+                ("h,help", "Print usage")
             ;
             auto result = options.parse(argc, argv);
+
+            if (result.count("help")) {
+                std::cout << options.help() << std::endl;
+                exit(0);
+            }
         }
 
         void print() {
