@@ -11,15 +11,17 @@
 #include "ping_pong_interfaces/msg/stamped100b.hpp"
 
 #include "utils.hpp"
+#include "eval_args.hpp"
 
 using namespace std::chrono_literals;
 class StartNode : public rclcpp::Node {
     public:
         StartNode(
-            float pubFrequency,
+            const EvalArgs& args,
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("start_node", "", opt) 
         {
-            uint32_t pubPeriodMs = static_cast<uint32_t>(1/pubFrequency * 1000);
+            args_ = args;
+            uint32_t pubPeriodMs = static_cast<uint32_t>(1/args_.pubFrequency * 1000);
             RCLCPP_INFO(this->get_logger(), "Publishing every %d ms", pubPeriodMs);
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
@@ -38,6 +40,7 @@ class StartNode : public rclcpp::Node {
         }
         rclcpp::TimerBase::SharedPtr timer_;
         rclcpp::Publisher<ping_pong_interfaces::msg::Stamped100b>::SharedPtr publisher_;
+        EvalArgs args_;
 };
 
 class IntermediateNode : public rclcpp::Node {
