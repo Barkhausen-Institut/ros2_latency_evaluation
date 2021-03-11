@@ -18,7 +18,7 @@ double variance(std::vector<uint64_t> samples) {
 
     double samplesMean = mean(samples);
     double sqSum = 0;
-    for (int i = 0; i < samples.size(); i++) {
+    for (size_t i = 0; i < samples.size(); i++) {
         sqSum += (samples.at(i) * samples.at(i));
     }
     return (sqSum/(samples.size()-1) - samplesMean * samplesMean);
