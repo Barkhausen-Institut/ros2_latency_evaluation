@@ -5,9 +5,9 @@
 #include "eval_args.hpp"
 
 int main(int argc, char* argv[]) {
-
     EvalArgs args(argc, argv);
     args.print();
+
     rclcpp::init(argc, argv);
 
     auto startNode = createNode<StartNode>(args);
