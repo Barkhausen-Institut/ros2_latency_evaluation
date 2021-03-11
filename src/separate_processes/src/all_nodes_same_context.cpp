@@ -7,6 +7,7 @@
 int main(int argc, char* argv[]) {
 
     EvalArgs args(argc, argv);
+    args.print();
     rclcpp::init(argc, argv);
 
     auto startNode = std::make_shared<StartNode>(args);

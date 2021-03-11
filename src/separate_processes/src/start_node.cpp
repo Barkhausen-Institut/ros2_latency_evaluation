@@ -4,6 +4,8 @@
 int main(int argc, char* argv[]) {
 
     EvalArgs args(argc, argv);
+    args.print();
+
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<StartNode>(args));
     rclcpp::shutdown();

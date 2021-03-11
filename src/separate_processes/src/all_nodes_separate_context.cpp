@@ -6,6 +6,7 @@
 
 int main(int argc, char* argv[]) {
     EvalArgs args(argc, argv);
+    args.print();
     rclcpp::init(argc, argv);
 
     auto contextStartNode = std::make_shared<rclcpp::Context>();
