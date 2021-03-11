@@ -31,6 +31,7 @@ class EvalArgs {
                 std::cout << options.help() << std::endl;
                 exit(0);
             }
+            verifyArgs();
         }
 
         void print() {
@@ -43,4 +44,18 @@ class EvalArgs {
         float pubFrequency;
         uint noNodes;
         std::string msgSize;
+
+    private:
+        std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"100b", "1kb", "10kb", "100kb", "500kb"};
+
+        void verifyArgs() {
+            if (std::find(
+                    SUPPORTED_MSG_SIZES_.begin(), 
+                    SUPPORTED_MSG_SIZES_.end(),
+                    msgSize) == SUPPORTED_MSG_SIZES_.end()) {
+                std::cout << "Message size not supported" << std::endl;
+                exit(0);
+            }
+                
+        }
 };
