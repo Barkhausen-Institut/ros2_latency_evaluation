@@ -5,8 +5,8 @@ int main(int argc, char* argv[]) {
     EvalArgs args(argc, argv);
     args.print();
 
-    auto node = createNode<StartNode>(args);
     rclcpp::init(argc, argv);
+    auto node = createNode<StartNode>(args);
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

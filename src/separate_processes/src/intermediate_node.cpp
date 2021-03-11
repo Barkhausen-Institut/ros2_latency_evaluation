@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[]) {
     EvalArgs args(argc, argv);
-    auto node = createNode<IntermediateNode>(args);
     rclcpp::init(argc, argv);
+    auto node = createNode<IntermediateNode>(args);
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
