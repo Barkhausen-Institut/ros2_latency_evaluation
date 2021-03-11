@@ -127,5 +127,5 @@ std::shared_ptr<rclcpp::Node> createNode(
     else if (args.msgSize == "500kb")
         return std::make_shared<NodeType<Stamped500kb>>(args, nodeOpts);
     else 
-        return std::make_shared<NodeType<Stamped100b>>(args, nodeOpts);
+        throw std::invalid_argument("Msg size not supported");
 }
