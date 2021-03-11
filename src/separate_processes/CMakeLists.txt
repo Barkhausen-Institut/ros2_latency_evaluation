@@ -21,27 +21,27 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ping_pong_interfaces REQUIRED)
 
-set(3RD_PARTY_INCLUDES "../3rdparty/")
+set(EXTERNAL_INCLUDES "../3rdparty/")
 
 add_executable(start_node src/start_node.cpp)
 ament_target_dependencies(start_node rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(start_node PRIVATE include/separate_processes/ ${3RD_PARTY_INCLUDES})
+target_include_directories(start_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 add_executable(intermediate_node src/intermediate_node.cpp)
 ament_target_dependencies(intermediate_node rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(intermediate_node PRIVATE include/separate_processes/ ${3RD_PARTY_INCLUDES})
+target_include_directories(intermediate_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 add_executable(end_node src/end_node.cpp)
 ament_target_dependencies(end_node rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(end_node PRIVATE include/separate_processes/ ${3RD_PARTY_INCLUDES})
+target_include_directories(end_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 add_executable(all_nodes_same_context src/all_nodes_same_context.cpp)
 ament_target_dependencies(all_nodes_same_context rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(all_nodes_same_context PRIVATE include/separate_processes/ ${3RD_PARTY_INCLUDES})
+target_include_directories(all_nodes_same_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 add_executable(all_nodes_separate_context src/all_nodes_separate_context.cpp)
 ament_target_dependencies(all_nodes_separate_context rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(all_nodes_separate_context PRIVATE include/separate_processes/ ${3RD_PARTY_INCLUDES})
+target_include_directories(all_nodes_separate_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 install(TARGETS
     start_node
