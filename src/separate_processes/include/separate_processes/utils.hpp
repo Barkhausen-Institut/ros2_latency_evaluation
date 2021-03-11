@@ -4,7 +4,6 @@
 #include <vector>
 #include <numeric>
 
-
 double mean(std::vector<uint64_t> samples) {
     if (samples.size() == 0)
         return 0;
@@ -19,25 +18,12 @@ double variance(std::vector<uint64_t> samples) {
 
     double samplesMean = mean(samples);
     double sqSum = 0;
-    for (int i = 0; i < samples.size(); i++) {
+    for (size_t i = 0; i < samples.size(); i++) {
         sqSum += (samples.at(i) * samples.at(i));
     }
     return (sqSum/(samples.size()-1) - samplesMean * samplesMean);
 }
 
-struct Arguments {
-    float pubFreq = 1.;
-};
-
-Arguments parseArgs(int argc, char* argv[]) {
-    Arguments args;
-
-    if (argc > 1) {
-        args.pubFreq = atof(argv[1]);
-    }
-
-    return args;
-}
 
 /*static uint64_t get_timestamp() {
   long int ns;

@@ -1,10 +1,13 @@
 #include "node_definitions.hpp"
+#include "eval_args.hpp"
 
 int main(int argc, char* argv[]) {
 
-    Arguments args = parseArgs(argc, argv);
+    EvalArgs args(argc, argv);
+    args.print();
+
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<StartNode>(args.pubFreq));
+    rclcpp::spin(std::make_shared<StartNode>(args));
     rclcpp::shutdown();
     return 0;
 }
