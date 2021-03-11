@@ -22,9 +22,10 @@ class EvalArgs {
                 ("f,publisher-frequency", "Publisher Frequency of start node",
                     cxxopts::value<float>(pubFrequency))
             ;
+            auto result = options.parse(argc, argv);
         }
 
-        void printOptions() {
+        void print() {
             std::cout << "Arguments are set as follows:" << std::endl;
             std::cout << "Publisher frequency in Hz: " << pubFrequency << std::endl;
             std::cout << "Number of nodes between start und end node: " << noNodes << std::endl;
