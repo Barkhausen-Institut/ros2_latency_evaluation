@@ -8,10 +8,13 @@ class EvalArgs {
         EvalArgs() {
             pubFrequency = 0.;
             noNodes = 1;
+
+            resultsDirectoryPath = "";
         }
 
         EvalArgs(int argc, char* argv[]) : EvalArgs() {
             parse(argc, argv);
+            createResultsDirectoryPath();
         }
 
         void parse (int argc, char* argv[]) {
@@ -35,8 +38,29 @@ class EvalArgs {
             std::cout << "Arguments are set as follows:" << std::endl;
             std::cout << "Publisher frequency in Hz: " << pubFrequency << std::endl;
             std::cout << "Number of nodes between start und end node: " << noNodes << std::endl;
+            std::cout << "Files will be saved to: ./" << resultsDirectoryPath << std::endl;
         }
 
         float pubFrequency;
         uint noNodes;
+        std::string resultsDirectoryPath;
+
+    private:
+        void createResultsDirectoryPath() {
+            std::ostringstream ss;
+            ss.precision(2);
+
+            // get current time stamp
+            time_t now;
+            struct tm* timeinfo;
+            char timestamp[100];
+
+            time(&now);
+            timeinfo = localtime(&now);
+            strftime(timestamp, 100, "%Y-%m-%d_%H-%M", timeinfo);
+
+            ss << timestamp << "_";
+            ss << noNodes << "Nodes_" << pubFrequency << "Hz";
+            resultsDirectoryPath = ss.str();
+        }
 };
