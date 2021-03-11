@@ -33,7 +33,7 @@ class EvalArgs {
         }
 
         EvalArgs(int argc, char* argv[]) : EvalArgs() {
-            parse(argc, argv):
+            parse(argc, argv);
         }
 
         void parse (int argc, char* argv[]) {
@@ -56,15 +56,6 @@ class EvalArgs {
         uint noNodes;
 };
 
-/*Arguments parseArgs(int argc, char* argv[]) {
-    Arguments args;
-
-    if (argc > 1) {
-        args.pubFreq = atof(argv[1]);
-    }
-
-    return args;
-}*/
 
 /*static uint64_t get_timestamp() {
   long int ns;
