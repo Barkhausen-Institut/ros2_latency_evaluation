@@ -8,6 +8,7 @@ class EvalArgs {
         EvalArgs() {
             pubFrequency = 0.;
             noNodes = 1;
+            msgSize = "100b";
         }
 
         EvalArgs(int argc, char* argv[]) : EvalArgs() {
@@ -22,7 +23,7 @@ class EvalArgs {
                 ("f,publisher-frequency", "Publisher Frequency of start node",
                     cxxopts::value<float>(pubFrequency))
                 ("m,msg-size", "Size of msg, Supported: 100b, 1kb, 10kb, 100kb, 500kb",
-                    cxxopts::value<std::string>(msgSize)->default_value("100b"))
+                    cxxopts::value<std::string>(msgSize))
                 ("h,help", "Print usage")
             ;
             auto result = options.parse(argc, argv);
