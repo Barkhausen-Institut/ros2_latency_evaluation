@@ -7,6 +7,7 @@
 int main(int argc, char* argv[]) {
     EvalArgs args(argc, argv);
     args.print();
+
     rclcpp::init(argc, argv);
 
     auto contextStartNode = std::make_shared<rclcpp::Context>();
@@ -25,9 +26,9 @@ int main(int argc, char* argv[]) {
     rclcpp::NodeOptions optEndNode = rclcpp::NodeOptions();
     optEndNode.context(contextEndNode);
 
-    auto startNode = std::make_shared<StartNode>(args, optStartNode);
-    auto interNode = std::make_shared<IntermediateNode>(optInterNode);
-    auto endNode = std::make_shared<EndNode>(optEndNode);
+    auto startNode = createNode<StartNode>(args, optStartNode);
+    auto interNode = createNode<IntermediateNode>(args, optInterNode);
+    auto endNode = createNode<EndNode>(args, optEndNode);
 
     auto exStartNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
     auto exInterNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();

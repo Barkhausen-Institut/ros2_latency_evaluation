@@ -5,14 +5,14 @@
 #include "eval_args.hpp"
 
 int main(int argc, char* argv[]) {
-
     EvalArgs args(argc, argv);
     args.print();
+
     rclcpp::init(argc, argv);
 
-    auto startNode = std::make_shared<StartNode>(args);
-    auto interNode = std::make_shared<IntermediateNode>();
-    auto endNode = std::make_shared<EndNode>();
+    auto startNode = createNode<StartNode>(args);
+    auto interNode = createNode<IntermediateNode>(args);
+    auto endNode = createNode<EndNode>(args);
 
     auto exStartNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
     auto exInterNode = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();

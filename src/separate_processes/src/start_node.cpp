@@ -2,12 +2,12 @@
 #include "eval_args.hpp"
 
 int main(int argc, char* argv[]) {
-
     EvalArgs args(argc, argv);
     args.print();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<StartNode>(args));
+    auto node = createNode<StartNode>(args);
+    rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }
