@@ -1,2 +1,2 @@
 MetaInfo info
-byte[102388] data
+byte[88] data

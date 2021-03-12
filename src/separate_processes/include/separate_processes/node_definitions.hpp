@@ -9,11 +9,17 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "ping_pong_interfaces/msg/stamped100b.hpp"
+#include "ping_pong_interfaces/msg/stamped1kb.hpp"
+#include "ping_pong_interfaces/msg/stamped10kb.hpp"
+#include "ping_pong_interfaces/msg/stamped100kb.hpp"
+#include "ping_pong_interfaces/msg/stamped500kb.hpp"
 
 #include "utils.hpp"
 #include "eval_args.hpp"
 
 using namespace std::chrono_literals;
+
+template <class MsgType>
 class StartNode : public rclcpp::Node {
     public:
         StartNode(
@@ -23,7 +29,7 @@ class StartNode : public rclcpp::Node {
             args_ = args;
             uint32_t pubPeriodMs = static_cast<uint32_t>(1/args_.pubFrequency * 1000);
             RCLCPP_INFO(this->get_logger(), "Publishing every %d ms", pubPeriodMs);
-            publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/start_pub_topic", 10);
+            publisher_ = this->create_publisher<MsgType>("/start_pub_topic", 10);
             timer_ = this->create_wall_timer(
                 std::chrono::milliseconds(pubPeriodMs),
                 std::bind(&StartNode::timer_callback, this));
@@ -32,24 +38,26 @@ class StartNode : public rclcpp::Node {
     
     private:
         void timer_callback() {
-            auto msg = ping_pong_interfaces::msg::Stamped100b();
+            auto msg = MsgType();
             auto now = get_timestamp();
             msg.info.timestamp = now;
             publisher_->publish(msg);
             RCLCPP_INFO(this->get_logger(), "Published msg");
         }
         rclcpp::TimerBase::SharedPtr timer_;
-        rclcpp::Publisher<ping_pong_interfaces::msg::Stamped100b>::SharedPtr publisher_;
+        typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
         EvalArgs args_;
 };
 
+template <class MsgType>
 class IntermediateNode : public rclcpp::Node {
     public:
         IntermediateNode(
+            const EvalArgs& args,
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt) 
         {
-            publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/end_sub_topic", 10);
-            subscription_ = this->create_subscription<ping_pong_interfaces::msg::Stamped100b>(
+            publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
+            subscription_ = this->create_subscription<MsgType>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
                 );
             //dumpCsvFile_.open(fileName + ".csv")
@@ -57,27 +65,30 @@ class IntermediateNode : public rclcpp::Node {
         }
 
     private:
-        void onPing(const ping_pong_interfaces::msg::Stamped100b::SharedPtr msg) const {
+        void onPing(const typename MsgType::SharedPtr msg) const {
             publisher_->publish(*msg);
             RCLCPP_INFO(this->get_logger(), "I received a msg");
             //dumpCsvFile_ << std::to_string(msg->info.timestamp) << ", dummy\n";
         }
-        rclcpp::Publisher<ping_pong_interfaces::msg::Stamped100b>::SharedPtr publisher_;
-        rclcpp::Subscription<ping_pong_interfaces::msg::Stamped100b>::SharedPtr subscription_;
-        std::ofstream dumpCsvFile_;
+        typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
+        typename rclcpp::Subscription<MsgType>::SharedPtr subscription_;
 };
 
+template <class MsgType>
 class EndNode : public rclcpp::Node {
     public:
-        EndNode(const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt) {
-            subscription_ = this->create_subscription<ping_pong_interfaces::msg::Stamped100b>(
+        EndNode(
+            const EvalArgs& args,
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt) 
+        {
+            subscription_ = this->create_subscription<MsgType>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
             );
-        noMsgs_ = 0;
+            noMsgs_ = 0;
         }
 
     private:
-        void onPong(const ping_pong_interfaces::msg::Stamped100b::SharedPtr msg) {
+        void onPong(const typename MsgType::SharedPtr msg) {
             noMsgs_++;
             if (noMsgs_ > 30) {
                 auto pong_received_timestamp = get_timestamp();
@@ -97,9 +108,28 @@ class EndNode : public rclcpp::Node {
                 RCLCPP_INFO(this->get_logger(), "Msgs: %s", std::to_string(noMsgs_).c_str());
             }
         }
-        rclcpp::Subscription<ping_pong_interfaces::msg::Stamped100b>::SharedPtr subscription_;
+        typename rclcpp::Subscription<MsgType>::SharedPtr subscription_;
 
         std::vector<uint64_t> delays_in_ms_;
         std::vector<std::tuple<double, double>> stats_;
         int noMsgs_;
 };
+
+using namespace ping_pong_interfaces::msg;
+template <template<class> class NodeType>
+std::shared_ptr<rclcpp::Node> createNode(
+    const EvalArgs& args,
+    const rclcpp::NodeOptions& nodeOpts = rclcpp::NodeOptions()) {
+    if (args.msgSize == "100b") 
+        return std::make_shared<NodeType<Stamped100b>>(args, nodeOpts);
+    else if (args.msgSize == "1kb") 
+        return std::make_shared<NodeType<Stamped1kb>>(args, nodeOpts);
+    else if (args.msgSize == "10kb")
+        return std::make_shared<NodeType<Stamped10kb>>(args, nodeOpts);
+    else if (args.msgSize == "100kb")
+        return std::make_shared<NodeType<Stamped100kb>>(args, nodeOpts);
+    else if (args.msgSize == "500kb")
+        return std::make_shared<NodeType<Stamped500kb>>(args, nodeOpts);
+    else 
+        throw std::invalid_argument("Msg size not supported");
+}
