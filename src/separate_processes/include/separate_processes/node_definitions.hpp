@@ -46,22 +46,21 @@ class StartNode : public rclcpp::Node {
 class IntermediateNode : public rclcpp::Node {
     public:
         IntermediateNode(
-            const std::string& fileName,
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt) 
         {
             publisher_ = this->create_publisher<ping_pong_interfaces::msg::Stamped100b>("/end_sub_topic", 10);
             subscription_ = this->create_subscription<ping_pong_interfaces::msg::Stamped100b>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
                 );
-            dumpCsvFile_.open(fileName + ".csv")
-            dumpCsvFile << "profiling stamp 1, profiling stamp 2\n";
+            //dumpCsvFile_.open(fileName + ".csv")
+            //dumpCsvFile << "profiling stamp 1, profiling stamp 2\n";
         }
 
     private:
         void onPing(const ping_pong_interfaces::msg::Stamped100b::SharedPtr msg) const {
             publisher_->publish(*msg);
             RCLCPP_INFO(this->get_logger(), "I received a msg");
-            dumpCsvFile_ << msg->info.timestamp << ", dummy\n";
+            //dumpCsvFile_ << std::to_string(msg->info.timestamp) << ", dummy\n";
         }
         rclcpp::Publisher<ping_pong_interfaces::msg::Stamped100b>::SharedPtr publisher_;
         rclcpp::Subscription<ping_pong_interfaces::msg::Stamped100b>::SharedPtr subscription_;
