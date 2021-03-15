@@ -2,7 +2,7 @@ image: barkhauseninstitut/ros2ci:foxy
 
 before_script:
   - cd ..
-  - wget https://github.com/Barkhausen-Institut/ros2profiling/blob/master/include/ros2profiling/profiling.h -P /opt/ros/foxy/include/ros2profiling/
+  - wget https://raw.githubusercontent.com/Barkhausen-Institut/ros2profiling/master/include/ros2profiling/profiling.h -P /opt/ros/foxy/include/ros2profiling/
   - . /opt/ros/foxy/setup.bash
   
 
