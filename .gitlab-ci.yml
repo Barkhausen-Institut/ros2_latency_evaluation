@@ -1,0 +1,10 @@
+image: barkhauseninstitut/ros2ci:foxy
+
+before_script:
+  - cd ..
+  - . /opt/ros/foxy/setup.bash
+
+build:
+  stage: build
+  script:
+    - colcon build --symlink-install
