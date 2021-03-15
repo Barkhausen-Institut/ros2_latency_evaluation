@@ -3,7 +3,7 @@ image: barkhauseninstitut/ros2ci:foxy
 before_script:
   - cd ..
   - . /opt/ros/foxy/setup.bash
-  - git clone https://github.com/Barkhausen-Institut/ros2profiling/blob/master/include/ros2profiling/profiling.h /opt/ros/foxy/include/ros2profiling/profiling.h
+  - wget https://github.com/Barkhausen-Institut/ros2profiling/blob/master/include/ros2profiling/profiling.h
 
 build:
   stage: build
