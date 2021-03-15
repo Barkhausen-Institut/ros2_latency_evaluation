@@ -7,6 +7,7 @@
 #include <ctime>
 
 #include "rclcpp/rclcpp.hpp"
+#include "ros2profiling/profiling.h"
 #include "ping_pong_interfaces/msg/stamped100b.hpp"
 #include "ping_pong_interfaces/msg/stamped1kb.hpp"
 #include "ping_pong_interfaces/msg/stamped10kb.hpp"
