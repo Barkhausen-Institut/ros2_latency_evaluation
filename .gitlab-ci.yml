@@ -1,0 +1,12 @@
+image: barkhauseninstitut/ros2ci:foxy
+
+before_script:
+  - cd ..
+  - wget https://raw.githubusercontent.com/Barkhausen-Institut/ros2profiling/master/include/ros2profiling/profiling.h -P /opt/ros/foxy/include/ros2profiling/
+  - . /opt/ros/foxy/setup.bash
+  
+
+build:
+  stage: build
+  script:
+    - colcon build --symlink-install
