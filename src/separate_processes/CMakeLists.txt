@@ -23,17 +23,9 @@ find_package(ping_pong_interfaces REQUIRED)
 
 set(EXTERNAL_INCLUDES "../3rdparty/")
 
-add_executable(start_node src/start_node.cpp)
-ament_target_dependencies(start_node rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(start_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
-
-add_executable(intermediate_node src/intermediate_node.cpp)
-ament_target_dependencies(intermediate_node rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(intermediate_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
-
-add_executable(end_node src/end_node.cpp)
-ament_target_dependencies(end_node rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(end_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
+add_executable(any_node src/any_node.cpp)
+ament_target_dependencies(any_node rclcpp std_msgs ping_pong_interfaces)
+target_include_directories(any_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 add_executable(all_nodes_same_context src/all_nodes_same_context.cpp)
 ament_target_dependencies(all_nodes_same_context rclcpp std_msgs ping_pong_interfaces)
@@ -44,9 +36,7 @@ ament_target_dependencies(all_nodes_separate_context rclcpp std_msgs ping_pong_i
 target_include_directories(all_nodes_separate_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
 install(TARGETS
-    start_node
-    intermediate_node
-    end_node
+    any_node
     all_nodes_same_context
     all_nodes_separate_context
     DESTINATION lib/${PROJECT_NAME})
