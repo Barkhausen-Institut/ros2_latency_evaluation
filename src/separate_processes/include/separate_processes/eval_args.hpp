@@ -8,7 +8,7 @@ class EvalArgs {
         EvalArgs() {
             pubFrequency = 0.;
             noNodes = 1;
-            msgSize = "100b";
+            msgSize = "128b";
         }
 
         EvalArgs(int argc, char* argv[]) : EvalArgs() {
@@ -23,7 +23,7 @@ class EvalArgs {
                     cxxopts::value<uint>(noNodes))
                 ("f,publisher-frequency", "Publisher Frequency of start node",
                     cxxopts::value<float>(pubFrequency))
-                ("m,msg-size", "Size of msg, Supported: 100b, 1kb, 10kb, 100kb, 500kb",
+                ("m,msg-size", "Size of msg, Supported: 128b, 1kb, 10kb, 100kb, 500kb",
                     cxxopts::value<std::string>(msgSize))
                 ("h,help", "Print usage")
             ;
@@ -48,7 +48,7 @@ class EvalArgs {
         std::string msgSize;
 
     private:
-        std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"100b", "1kb", "10kb", "100kb", "500kb"};
+        std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"128b", "1kb", "10kb", "100kb", "500kb"};
 
         void verifyArgs() {
             if (std::find(
