@@ -51,23 +51,21 @@ protected:
       resultDump_ << "tracking_number,";
       resultDump_ << "header_timestamp,";
       for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
-	 resultDump_ << "prof_" + std::to_string(i);
-	 if (i < NUM_PROFILING_STEPS - 1)
-	    resultDump_ << ",";
+	 resultDump_ << "prof_" + std::to_string(i) << ",";
       }
+      resultDump_ << "callback_timestamp";
       resultDump_ << std::endl;
    }
 
    template<class Msg>
-   void dumpTimestamps(const typename Msg::SharedPtr msg) {
+   void dumpTimestamps(const typename Msg::SharedPtr msg, uint64_t callbackTimestamp) {
       const void* rawMsg = msg.get();
       resultDump_ << msg->info.tracking_number << ",";
       resultDump_ << msg->info.timestamp << ",";
       for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
-	 resultDump_ << get_profile(rawMsg, i);
-	 if (i < NUM_PROFILING_STEPS - 1)
-	    resultDump_ << ",";
+	 resultDump_ << get_profile(rawMsg, i) << ",";
       }
+      resultDump_ << callbackTimestamp;
       resultDump_ << std::endl;
    }
 
@@ -101,7 +99,9 @@ class StartNode : public BenchmarkNode {
             msg.info.timestamp = now;
 	    msg.info.tracking_number = trackingNumber_++;
             publisher_->publish(msg);
-            RCLCPP_INFO(this->get_logger(), "Published msg");
+
+	    if (trackingNumber_ % 100 == 0)
+		RCLCPP_INFO(get_logger(), "Published %d messages", trackingNumber_);
         }
         rclcpp::TimerBase::SharedPtr timer_;
         typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
@@ -124,9 +124,8 @@ class IntermediateNode : public BenchmarkNode {
 
     private:
         void onPing(const typename MsgType::SharedPtr msg) {
-	   dumpTimestamps<MsgType>(msg);
+	    dumpTimestamps<MsgType>(msg, get_timestamp());
             publisher_->publish(*msg);
-            RCLCPP_INFO(this->get_logger(), "I received a msg");
         }
         typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
         typename rclcpp::Subscription<MsgType>::SharedPtr subscription_;
@@ -148,30 +147,17 @@ class EndNode : public BenchmarkNode {
 
     private:
         void onPong(const typename MsgType::SharedPtr msg) {
-	   dumpTimestamps<MsgType>(msg);
+	    uint64_t callbackTimestamp = get_timestamp();
+	    dumpTimestamps<MsgType>(msg, callbackTimestamp);
             noMsgs_++;
-            if (noMsgs_ > 30) {
-                auto pong_received_timestamp = get_timestamp();
-                uint64_t msg_delay = pong_received_timestamp - msg->info.timestamp;
-                delays_in_ms_.push_back(msg_delay/1000);
-
-                double meanSamples = mean(delays_in_ms_);
-                double varianceSamples = variance(delays_in_ms_);
-
-                stats_.push_back(std::make_tuple(meanSamples, varianceSamples));
-                RCLCPP_INFO(this->get_logger(), "latency in ms: %s",
-                            std::to_string(msg_delay/1000).c_str());
-                RCLCPP_INFO(this->get_logger(), "Updated mean of latency in ms: %s",
-                            std::to_string(meanSamples).c_str());
-                RCLCPP_INFO(this->get_logger(), "Updated Variance of latency in ms: %s",
-                            std::to_string(varianceSamples).c_str());
-                RCLCPP_INFO(this->get_logger(), "Msgs: %s", std::to_string(noMsgs_).c_str());
-            }
+	    if (noMsgs_ % 100 == 0) {
+		auto latency = callbackTimestamp - msg->info.timestamp;
+		RCLCPP_INFO(get_logger(), "Received %d messages. Last latency: %d",
+			    noMsgs_, latency);
+	    }
         }
         typename rclcpp::Subscription<MsgType>::SharedPtr subscription_;
 
-        std::vector<uint64_t> delays_in_ms_;
-        std::vector<std::tuple<double, double>> stats_;
         int noMsgs_;
 };
 
