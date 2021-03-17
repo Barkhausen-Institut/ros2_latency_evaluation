@@ -45,7 +45,6 @@ class StartNode : public BenchmarkNode {
             timer_ = this->create_wall_timer(
                 std::chrono::milliseconds(pubPeriodMs),
                 std::bind(&StartNode::timer_callback, this));
-
         }
 
     private:
@@ -61,36 +60,35 @@ class StartNode : public BenchmarkNode {
 };
 
 template <class MsgType>
-class IntermediateNode : public rclcpp::Node {
+class IntermediateNode : public BenchmarkNode {
     public:
         IntermediateNode(
             const EvalArgs& args,
-            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("intermediate_node", "", opt)
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
+	   : BenchmarkNode("intermediate_node", args, opt)
         {
             publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
             subscription_ = this->create_subscription<MsgType>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
                 );
-            //dumpCsvFile_.open(fileName + ".csv")
-            //dumpCsvFile << "profiling stamp 1, profiling stamp 2\n";
         }
 
     private:
         void onPing(const typename MsgType::SharedPtr msg) const {
             publisher_->publish(*msg);
             RCLCPP_INFO(this->get_logger(), "I received a msg");
-            //dumpCsvFile_ << std::to_string(msg->info.timestamp) << ", dummy\n";
         }
         typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
         typename rclcpp::Subscription<MsgType>::SharedPtr subscription_;
 };
 
 template <class MsgType>
-class EndNode : public rclcpp::Node {
+class EndNode : public BenchmarkNode {
     public:
         EndNode(
             const EvalArgs& args,
-            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions()) : Node("end_node", "", opt)
+            const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
+	   : BenchmarkNode("end_node", args, opt)
         {
             subscription_ = this->create_subscription<MsgType>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
