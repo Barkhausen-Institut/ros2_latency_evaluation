@@ -25,10 +25,33 @@ public:
    BenchmarkNode(const std::string& nodeName,
 		 const EvalArgs& args,
 		 const rclcpp::NodeOptions& opt) : Node(nodeName, "", opt), args_(args) {
+
+      startTime = std::chrono::system_clock::now();
+      shutdownTimer_ = create_wall_timer(std::chrono::seconds(1),
+					 [this]() { onShutdownTimer(); });
+
+      createResultFile();
    }
 
 protected:
+   void onShutdownTimer() {
+      auto now = std::chrono::system_clock::now();
+      std::chrono::duration<double> diff = (now - startTime);
+      if (diff.count()  > args_.duration) {
+	 std::cout << "Shutting down" << std::endl;
+	 rclcpp::shutdown();
+      }
+   }
+
+   void createResultFile() {
+      resultDump_.open(args_.resultsFilename);
+   }
+
+   std::ofstream resultDump_;
+
    EvalArgs args_;
+   std::chrono::time_point<std::chrono::system_clock> startTime;
+   rclcpp::TimerBase::SharedPtr shutdownTimer_;
 };
 
 template <class MsgType>

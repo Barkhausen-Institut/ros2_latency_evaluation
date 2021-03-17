@@ -10,6 +10,7 @@ public:
    EvalArgs(int argc, char* argv[]) {
       parse(argc, argv);
       createResultsDirectoryPath();
+      createResultFilename();
    }
 
    void parse (int argc, char* argv[]) {
