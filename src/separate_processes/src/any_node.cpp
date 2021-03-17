@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
       node = createNode<EndNode>(args);
     }
     else {
-      std::cout << "Creating INTERMEDIATE Node Nr. " << args.nodeIndex + 1 << std::endl;
+      std::cout << "Creating INTERMEDIATE Node Nr. " << args.nodeIndex << std::endl;
       node = createNode<IntermediateNode>(args);
     }
     rclcpp::spin(node);

@@ -20,6 +20,8 @@
 
 using namespace std::chrono_literals;
 
+const uint NUM_PROFILING_STEPS = 14;
+
 class BenchmarkNode : public rclcpp::Node {
 public:
    BenchmarkNode(const std::string& nodeName,
@@ -31,6 +33,7 @@ public:
 					 [this]() { onShutdownTimer(); });
 
       createResultFile();
+
    }
 
 protected:
@@ -45,6 +48,27 @@ protected:
 
    void createResultFile() {
       resultDump_.open(args_.resultsFilename);
+      resultDump_ << "tracking_number,";
+      resultDump_ << "header_timestamp,";
+      for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
+	 resultDump_ << "prof_" + std::to_string(i);
+	 if (i < NUM_PROFILING_STEPS - 1)
+	    resultDump_ << ",";
+      }
+      resultDump_ << std::endl;
+   }
+
+   template<class Msg>
+   void dumpTimestamps(const typename Msg::SharedPtr msg) {
+      const void* rawMsg = msg.get();
+      resultDump_ << msg->info.tracking_number << ",";
+      resultDump_ << msg->info.timestamp << ",";
+      for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
+	 resultDump_ << get_profile(rawMsg, i);
+	 if (i < NUM_PROFILING_STEPS - 1)
+	    resultDump_ << ",";
+      }
+      resultDump_ << std::endl;
    }
 
    std::ofstream resultDump_;
@@ -75,11 +99,13 @@ class StartNode : public BenchmarkNode {
             auto msg = MsgType();
             auto now = get_timestamp();
             msg.info.timestamp = now;
+	    msg.info.tracking_number = trackingNumber_++;
             publisher_->publish(msg);
             RCLCPP_INFO(this->get_logger(), "Published msg");
         }
         rclcpp::TimerBase::SharedPtr timer_;
         typename rclcpp::Publisher<MsgType>::SharedPtr publisher_;
+        uint trackingNumber_ = 0;
 };
 
 template <class MsgType>
@@ -97,7 +123,8 @@ class IntermediateNode : public BenchmarkNode {
         }
 
     private:
-        void onPing(const typename MsgType::SharedPtr msg) const {
+        void onPing(const typename MsgType::SharedPtr msg) {
+	   dumpTimestamps<MsgType>(msg);
             publisher_->publish(*msg);
             RCLCPP_INFO(this->get_logger(), "I received a msg");
         }
@@ -121,6 +148,7 @@ class EndNode : public BenchmarkNode {
 
     private:
         void onPong(const typename MsgType::SharedPtr msg) {
+	   dumpTimestamps<MsgType>(msg);
             noMsgs_++;
             if (noMsgs_ > 30) {
                 auto pong_received_timestamp = get_timestamp();
