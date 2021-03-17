@@ -23,13 +23,13 @@ def generate_launch_description():
     nodes.append(Node(
                     package=PKG,
                     executable=NODE,
-                    remappings=[("/start_pub_topic", "/step_0")],
+                    remappings=[("/start_pub_topic", "/step_profile_0")],
                     arguments=nodeArgsList + ['--node-index', '0'],
                     name="start_node"))
     for i in range(intNodes):
         remappings = []
-        remappings.append(("/start_pub_topic", f"/step_{i}"))
-        remappings.append(("/end_sub_topic", f"/step_{i+1}"))
+        remappings.append(("/start_pub_topic", f"/step_profile_{i}"))
+        remappings.append(("/end_sub_topic", f"/step_profile_{i+1}"))
         print(remappings)
         nodes.append(Node(
                     package=PKG,
@@ -41,7 +41,7 @@ def generate_launch_description():
     nodes.append(Node(
                     package=PKG,
                     executable=NODE,
-                    remappings=[("/end_sub_topic", f"/step_{intNodes}")],
+                    remappings=[("/end_sub_topic", f"/step_profile_{intNodes}")],
                     arguments=nodeArgsList + ['--node-index', str(noNodes-1)],
                     name="end_node"))
 

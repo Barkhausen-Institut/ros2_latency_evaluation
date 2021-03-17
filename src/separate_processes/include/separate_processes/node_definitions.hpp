@@ -40,7 +40,10 @@ protected:
    void onShutdownTimer() {
       auto now = std::chrono::system_clock::now();
       std::chrono::duration<double> diff = (now - startTime);
-      if (diff.count()  > args_.duration) {
+      int offset = 0;
+      if (args_.nodeIndex > 0)
+	  offset = 2; // kill the following nodes a bit later than the start node.
+      if (diff.count()  > args_.duration + offset) {
 	 std::cout << "Shutting down" << std::endl;
 	 rclcpp::shutdown();
       }
@@ -151,8 +154,8 @@ class EndNode : public BenchmarkNode {
 	    dumpTimestamps<MsgType>(msg, callbackTimestamp);
             noMsgs_++;
 	    if (noMsgs_ % 100 == 0) {
-		auto latency = callbackTimestamp - msg->info.timestamp;
-		RCLCPP_INFO(get_logger(), "Received %d messages. Last latency: %d",
+		uint64_t latency = callbackTimestamp - msg->info.timestamp;
+		RCLCPP_INFO(get_logger(), "Received %d messages. Last latency: %llu",
 			    noMsgs_, latency);
 	    }
         }
