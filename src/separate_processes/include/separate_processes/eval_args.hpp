@@ -23,7 +23,7 @@ public:
 	 ("m,msg-size", "Size of msg, Supported: 100b, 1kb, 10kb, 100kb, 500kb",
 	  cxxopts::value<std::string>(msgSize))
 	 ("n,node-index", "Index of the node in the chain. 0 = start node, N-1 = end node",
-	  cxxopts::value<uint>(nodeIndex))
+	  cxxopts::value<int>(nodeIndex))
 	 ("d,duration", "Duration (in seconds) of the measurement",
 	  cxxopts::value<uint>(duration))
 	 ("h,help", "Print usage")
@@ -34,6 +34,16 @@ public:
 	 std::cout << options.help() << std::endl;
 	 exit(0);
       }
+      if (result.count("node-index") == 0) {
+	 std::cout << "--node-index is required!" << std::endl;
+	 exit(1);
+      }
+      if (result.count("no-nodes") == 0) {
+	 std::cout << "--no-nodes is required!" << std::endl;
+	 exit(1);
+      }
+
+
       verifyArgs();
    }
 
@@ -46,9 +56,9 @@ public:
    }
 
    float pubFrequency = 1;
-   uint noNodes = 1;
-   uint nodeIndex = 0;
-   uint duration = 0;
+   uint noNodes = -1;
+   int nodeIndex = -1;
+   uint duration = 10;
    std::string resultsDirectoryPath = "";
    std::string msgSize = "100b";
 
