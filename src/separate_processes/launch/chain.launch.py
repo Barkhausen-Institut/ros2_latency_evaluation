@@ -13,11 +13,12 @@ def generate_launch_description():
     intNodes = int(os.environ.get("INT_NODES", "1"))
     pubFrequency = os.environ.get("PUB_FREQUENCY", "1")
     msgSize = os.environ.get("MSG_SIZE", "100b")
+    duration = os.environ.get("DURATION", "10")
 
     noNodes = intNodes + 2
 
 
-    nodeArgsList = ['-f', pubFrequency, '-N', str(noNodes), '-m', msgSize]
+    nodeArgsList = ['-f', pubFrequency, '-N', str(noNodes), '-m', msgSize, '--duration', duration]
     nodes = []
     nodes.append(Node(
                     package=PKG,
