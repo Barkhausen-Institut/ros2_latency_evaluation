@@ -59,6 +59,7 @@ public:
    int nodeIndex = -1;
    uint duration = 10;
    std::string resultsDirectoryPath = "";
+   std::string resultsFilename = "";
    std::string msgSize = "100b";
 
 private:
@@ -83,6 +84,14 @@ private:
       ss << msgSize << "_" << middleware << "_";
       ss << duration << "s";
       resultsDirectoryPath = ss.str();
+   }
+
+   void createResultFilename() {
+      createResultsDirectoryPath();
+      std::ostringstream ss;
+      ss << resultsDirectoryPath << "/";
+      ss << nodeIndex << "-" << noNodes << ".csv";
+      resultsFilename = ss.str();
    }
 
    void verifyArgs() {
