@@ -6,9 +6,9 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -27,18 +27,18 @@ add_executable(any_node src/any_node.cpp)
 ament_target_dependencies(any_node rclcpp std_msgs ping_pong_interfaces)
 target_include_directories(any_node PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
 
-add_executable(all_nodes_same_context src/all_nodes_same_context.cpp)
-ament_target_dependencies(all_nodes_same_context rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(all_nodes_same_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
-
-add_executable(all_nodes_separate_context src/all_nodes_separate_context.cpp)
-ament_target_dependencies(all_nodes_separate_context rclcpp std_msgs ping_pong_interfaces)
-target_include_directories(all_nodes_separate_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
-
+# add_executable(all_nodes_same_context src/all_nodes_same_context.cpp)
+# ament_target_dependencies(all_nodes_same_context rclcpp std_msgs ping_pong_interfaces)
+# target_include_directories(all_nodes_same_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
+#
+# add_executable(all_nodes_separate_context src/all_nodes_separate_context.cpp)
+# ament_target_dependencies(all_nodes_separate_context rclcpp std_msgs ping_pong_interfaces)
+# target_include_directories(all_nodes_separate_context PRIVATE include/separate_processes/ ${EXTERNAL_INCLUDES})
+#
 install(TARGETS
     any_node
-    all_nodes_same_context
-    all_nodes_separate_context
+    # all_nodes_same_context
+    # all_nodes_separate_context
     DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

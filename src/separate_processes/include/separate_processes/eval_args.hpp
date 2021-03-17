@@ -43,7 +43,6 @@ public:
 	 exit(1);
       }
 
-
       verifyArgs();
    }
 
@@ -76,9 +75,12 @@ private:
       timeinfo = localtime(&now);
       strftime(timestamp, 100, "%Y-%m-%d_%H-%M", timeinfo);
 
+      const std::string middleware = "unknown-rmw";
+
       ss << timestamp << "_";
       ss << noNodes << "Nodes_" << pubFrequency << "Hz_";
-      ss << msgSize << "_";
+      ss << msgSize << "_" << middleware << "_";
+      ss << duration << "s";
       resultsDirectoryPath = ss.str();
    }
 

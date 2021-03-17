@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include "node_definitions.hpp"
 #include "eval_args.hpp"
 
@@ -8,6 +10,7 @@ int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> node;
     if (args.nodeIndex == 0) {
+      std::filesystem::create_directory(args.resultsDirectoryPath);
       std::cout << "Creating a START node" << std::endl;
       node = createNode<StartNode>(args);
     }
