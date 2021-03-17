@@ -73,10 +73,11 @@ private:
 
       time(&now);
       timeinfo = localtime(&now);
-      strftime(timestamp, 100, "%Y-%m-%d_%H-%M", timeinfo);
+      strftime(timestamp, 100, "%Y-%m-%d_%H-%M-%S", timeinfo);
 
       const std::string middleware = "unknown-rmw";
 
+      ss << "results/";
       ss << timestamp << "_";
       ss << noNodes << "Nodes_" << pubFrequency << "Hz_";
       ss << msgSize << "_" << middleware << "_";
