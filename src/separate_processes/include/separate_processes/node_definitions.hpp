@@ -26,13 +26,12 @@ class BenchmarkNode : public rclcpp::Node {
 public:
     BenchmarkNode(const std::string& nodeName,
                     const EvalArgs& args,
-                    const rclcpp::NodeOptions& opt) 
+                    const rclcpp::NodeOptions& opt)
     : Node(nodeName, "", opt), args_(args) {
         startTime = std::chrono::system_clock::now();
         shutdownTimer_ = create_wall_timer(std::chrono::seconds(1),
                                             [this]() { onShutdownTimer(); });
 
-        createResultFile();
    }
 
 protected:
@@ -119,7 +118,9 @@ class IntermediateNode : public BenchmarkNode {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
        : BenchmarkNode("intermediate_node", args, opt)
         {
-            publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
+	    createResultFile();
+
+	    publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
             subscription_ = this->create_subscription<MsgType>(
                 "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
             );
@@ -142,7 +143,9 @@ class EndNode : public BenchmarkNode {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
         : BenchmarkNode("end_node", args, opt)
         {
-            subscription_ = this->create_subscription<MsgType>(
+	    createResultFile();
+
+	    subscription_ = this->create_subscription<MsgType>(
                 "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
             );
             noMsgs_ = 0;

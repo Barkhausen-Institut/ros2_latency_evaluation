@@ -97,10 +97,10 @@ private:
         if (std::find(
                 SUPPORTED_MSG_SIZES_.begin(),
                 SUPPORTED_MSG_SIZES_.end(),
-                msgSize) == SUPPORTED_MSG_SIZES_.end()) 
+                msgSize) == SUPPORTED_MSG_SIZES_.end())
         {
             std::cout << "Message size not supported" << std::endl;
-            exit(0);
+            exit(1);
         }
         if (noNodes < 0) {
             std::cerr << "Number of nodes must be given" << std::endl;
