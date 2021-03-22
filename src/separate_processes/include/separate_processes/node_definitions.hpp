@@ -51,8 +51,10 @@ protected:
         resultDump_.open(args_.resultsFilename);
         resultDump_ << "tracking_number,";
         resultDump_ << "header_timestamp,";
+
+	auto names = getProfIdxMap();
         for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
-            resultDump_ << "prof_" + std::to_string(i) << ",";
+            resultDump_ << "prof_" + names[i] << ",";
         }
         resultDump_ << "callback_timestamp";
         resultDump_ << std::endl;
@@ -68,6 +70,25 @@ protected:
         }
         resultDump_ << callbackTimestamp;
         resultDump_ << std::endl;
+    }
+
+    std::map<int, std::string> getProfIdxMap() {
+	std::map<int, std::string> result;
+	result[0] = "PUB_RCLCPP_INTERPROCESS_PUBLISH 0";
+	result[1] = "PUB_RCL_PUBLISH";
+	result[2] = "PUB_RMW_PUBLISH";
+	result[3] = "PUB_DDS_WRITE";
+	result[4] = "SUB_DDS_ONDATA";
+	result[5] = "SUB_RCLCPP_TAKE_ENTER";
+	result[6] = "SUB_RCL_TAKE_ENTER";
+	result[7] = "SUB_RMW_TAKE_ENTER";
+	result[8] = "SUB_DDS_TAKE_ENTER";
+	result[9] = "SUB_DDS_TAKE_LEAVE";
+	result[10] = "SUB_RMW_TAKE_LEAVE";
+	result[11] = "SUB_RCL_TAKE_LEAVE";
+	result[12] = "SUB_RCLCPP_TAKE_LEAVE";
+	result[13] = "SUB_RCLCPP_HANDLE";
+	return result;
     }
 
     std::ofstream resultDump_;
@@ -91,6 +112,9 @@ class StartNode : public BenchmarkNode {
             timer_ = this->create_wall_timer(
                 std::chrono::milliseconds(pubPeriodMs),
                 std::bind(&StartNode::timer_callback, this));
+
+	    // touch the result file.
+	    std::ofstream f(args_.resultsFilename);
         }
 
     private:

@@ -89,7 +89,8 @@ private:
         createResultsDirectoryPath();
         std::ostringstream ss;
         ss << resultsDirectoryPath << "/";
-        ss << nodeIndex << "-" << noNodes << ".csv";
+	// Use + 1 for the index to make it 1-based
+        ss << nodeIndex + 1 << "-" << noNodes << ".csv";
         resultsFilename = ss.str();
     }
 
