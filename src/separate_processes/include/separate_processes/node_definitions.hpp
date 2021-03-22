@@ -20,7 +20,7 @@
 
 using namespace std::chrono_literals;
 
-const uint NUM_PROFILING_STEPS = 14;
+const unsigned int NUM_PROFILING_STEPS = 14;
 
 class BenchmarkNode : public rclcpp::Node {
 public:
@@ -53,7 +53,7 @@ protected:
         resultDump_ << "header_timestamp,";
 
 	auto names = getProfIdxMap();
-        for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
+        for (unsigned int i = 0; i < NUM_PROFILING_STEPS; i++) {
             resultDump_ << "prof_" + names[i] << ",";
         }
         resultDump_ << "callback_timestamp";
@@ -65,7 +65,7 @@ protected:
         const void* rawMsg = msg.get();
         resultDump_ << msg->info.tracking_number << ",";
         resultDump_ << msg->info.timestamp << ",";
-        for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
+        for (unsigned int i = 0; i < NUM_PROFILING_STEPS; i++) {
             resultDump_ << get_profile(rawMsg, i) << ",";
         }
         resultDump_ << callbackTimestamp;

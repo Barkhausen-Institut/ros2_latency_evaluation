@@ -12,7 +12,9 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wno-unused-variable)
+  #add_compile_options(-Wunused-variable)
+  add_compile_options(-Wall -pedantic)
+  add_compile_options(-Werror)
 endif()
 
 # find dependencies
