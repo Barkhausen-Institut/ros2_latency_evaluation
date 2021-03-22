@@ -18,7 +18,10 @@ def generate_launch_description():
     noNodes = intNodes + 2
 
 
-    nodeArgsList = ['-f', pubFrequency, '-N', str(noNodes), '-m', msgSize, '--duration', duration]
+    nodeArgsList = ['--publisher-frequency', pubFrequency,
+                    '--no-nodes', str(noNodes),
+                    '--msg-size', msgSize,
+                    '--duration', duration]
     nodes = []
     nodes.append(Node(
                     package=PKG,
