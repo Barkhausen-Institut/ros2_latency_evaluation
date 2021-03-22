@@ -9,7 +9,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "ros2profiling/profiling.h"
-#include "ping_pong_interfaces/msg/stamped100b.hpp"
+#include "ping_pong_interfaces/msg/stamped128b.hpp"
 #include "ping_pong_interfaces/msg/stamped1kb.hpp"
 #include "ping_pong_interfaces/msg/stamped10kb.hpp"
 #include "ping_pong_interfaces/msg/stamped100kb.hpp"
@@ -169,8 +169,8 @@ template <template<class> class NodeType>
 std::shared_ptr<rclcpp::Node> createNode(
     const EvalArgs& args,
     const rclcpp::NodeOptions& nodeOpts = rclcpp::NodeOptions()) {
-    if (args.msgSize == "100b")
-        return std::make_shared<NodeType<Stamped100b>>(args, nodeOpts);
+    if (args.msgSize == "128b")
+        return std::make_shared<NodeType<Stamped128b>>(args, nodeOpts);
     else if (args.msgSize == "1kb")
         return std::make_shared<NodeType<Stamped1kb>>(args, nodeOpts);
     else if (args.msgSize == "10kb")

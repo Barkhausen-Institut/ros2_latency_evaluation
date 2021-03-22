@@ -21,7 +21,7 @@ public:
 	     cxxopts::value<uint>(noNodes))
 	    ("f,publisher-frequency", "Publisher Frequency of start node",
 	     cxxopts::value<float>(pubFrequency))
-	    ("m,msg-size", "Size of msg, Supported: 100b, 1kb, 10kb, 100kb, 500kb",
+	    ("m,msg-size", "Size of msg, Supported: 128b, 1kb, 10kb, 100kb, 500kb",
 	     cxxopts::value<std::string>(msgSize))
 	    ("n,node-index", "Index of the node in the chain. 0 = start node, N-1 = end node",
 	     cxxopts::value<int>(nodeIndex))
@@ -55,7 +55,7 @@ public:
     uint duration = 10;
     std::string resultsDirectoryPath = "";
     std::string resultsFilename = "";
-    std::string msgSize = "100b";
+    std::string msgSize = "128b";
 
 private:
     void createResultsDirectoryPath() {
@@ -110,5 +110,5 @@ private:
 	}
     }
 
-    std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"100b", "1kb", "10kb", "100kb", "500kb"};
+    std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"128b", "1kb", "10kb", "100kb", "500kb"};
 };

@@ -21,7 +21,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/MetaInfo.msg"
-    "msg/Stamped100b.msg"
+    "msg/Stamped128b.msg"
     "msg/Stamped1kb.msg"
     "msg/Stamped10kb.msg"
     "msg/Stamped100kb.msg"
