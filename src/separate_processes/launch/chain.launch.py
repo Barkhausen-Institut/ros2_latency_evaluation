@@ -7,37 +7,45 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 PKG = "separate_processes"
+NODE = "any_node"
 
 def generate_launch_description():
     intNodes = int(os.environ.get("INT_NODES", "1"))
     pubFrequency = os.environ.get("PUB_FREQUENCY", "1")
     msgSize = os.environ.get("MSG_SIZE", "100b")
+    duration = os.environ.get("DURATION", "10")
 
-    nodeArgsList = ['-f', pubFrequency, '-n', str(intNodes), '-m', msgSize]
+    noNodes = intNodes + 2
+
+
+    nodeArgsList = ['--publisher-frequency', pubFrequency,
+                    '--no-nodes', str(noNodes),
+                    '--msg-size', msgSize,
+                    '--duration', duration]
     nodes = []
     nodes.append(Node(
                     package=PKG,
-                    executable='start_node',
-                    remappings=[("/start_pub_topic", "/step_0")],
-                    arguments=nodeArgsList,
+                    executable=NODE,
+                    remappings=[("/start_pub_topic", "/step_profile_0")],
+                    arguments=nodeArgsList + ['--node-index', '0'],
                     name="start_node"))
     for i in range(intNodes):
         remappings = []
-        remappings.append(("/start_pub_topic", f"/step_{i}"))
-        remappings.append(("/end_sub_topic", f"/step_{i+1}"))
+        remappings.append(("/start_pub_topic", f"/step_profile_{i}"))
+        remappings.append(("/end_sub_topic", f"/step_profile_{i+1}"))
         print(remappings)
         nodes.append(Node(
                     package=PKG,
-                    executable='intermediate_node',
+                    executable=NODE,
                     remappings=remappings,
-                    arguments=nodeArgsList,
+                    arguments=nodeArgsList + ['--node-index', str(i+1)],
                     name=f"intermediate_node_{i}"))
 
     nodes.append(Node(
                     package=PKG,
-                    executable='end_node',
-                    remappings=[("/end_sub_topic", f"/step_{intNodes}")],
-                    arguments=nodeArgsList,
+                    executable=NODE,
+                    remappings=[("/end_sub_topic", f"/step_profile_{intNodes}")],
+                    arguments=nodeArgsList + ['--node-index', str(noNodes-1)],
                     name="end_node"))
 
     return LaunchDescription(nodes)

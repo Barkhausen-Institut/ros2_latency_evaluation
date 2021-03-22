@@ -19,3 +19,4 @@ $ <parameters> ros2 launch launch/chain.launch.py
   - 10kb
   - 100kb
   - 500kb
+- `DURATION=10` : Duration of the measurement in seconds.
