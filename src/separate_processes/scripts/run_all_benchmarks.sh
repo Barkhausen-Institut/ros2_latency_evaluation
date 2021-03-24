@@ -6,7 +6,7 @@ TEST=1  # set to 1, to choose the test param set.
 
 if [ "1" -eq $TEST ]; then
     DDS_BACKENDS='rmw_fastrtps_cpp'
-    INT_NODES_SET="5"
+    INT_NODES_SET="100"
     F_PUBLISHER_SET="20"
     MSG_SIZE_SET='128b'
     QOS_RELIABILITY_SET='best-effort'

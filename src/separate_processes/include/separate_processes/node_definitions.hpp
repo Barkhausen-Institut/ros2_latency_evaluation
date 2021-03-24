@@ -52,7 +52,7 @@ protected:
         resultDump_ << "tracking_number,";
         resultDump_ << "header_timestamp,";
 
-	auto names = getProfIdxMap();
+        auto names = getProfIdxMap();
         for (uint i = 0; i < NUM_PROFILING_STEPS; i++) {
             resultDump_ << "prof_" + names[i] << ",";
         }
@@ -73,31 +73,31 @@ protected:
     }
 
     auto getQosProfile() {
-	if (args_.qos == "reliable")
-	    return rclcpp::QoS(10).reliable();
-	else if (args_.qos == "best-effort")
-	    return rclcpp::QoS(10).best_effort();
-	else
-	    throw std::invalid_argument("Invalid QoS setting!");
+        if (args_.qos == "reliable")
+            return rclcpp::QoS(10).reliable();
+        else if (args_.qos == "best-effort")
+            return rclcpp::QoS(10).best_effort();
+        else
+            throw std::invalid_argument("Invalid QoS setting!");
     }
 
     std::map<int, std::string> getProfIdxMap() {
-	std::map<int, std::string> result;
-	result[0] = "PUB_RCLCPP_INTERPROCESS_PUBLISH 0";
-	result[1] = "PUB_RCL_PUBLISH";
-	result[2] = "PUB_RMW_PUBLISH";
-	result[3] = "PUB_DDS_WRITE";
-	result[4] = "SUB_DDS_ONDATA";
-	result[5] = "SUB_RCLCPP_TAKE_ENTER";
-	result[6] = "SUB_RCL_TAKE_ENTER";
-	result[7] = "SUB_RMW_TAKE_ENTER";
-	result[8] = "SUB_DDS_TAKE_ENTER";
-	result[9] = "SUB_DDS_TAKE_LEAVE";
-	result[10] = "SUB_RMW_TAKE_LEAVE";
-	result[11] = "SUB_RCL_TAKE_LEAVE";
-	result[12] = "SUB_RCLCPP_TAKE_LEAVE";
-	result[13] = "SUB_RCLCPP_HANDLE";
-	return result;
+        std::map<int, std::string> result;
+        result[0] = "PUB_RCLCPP_INTERPROCESS_PUBLISH 0";
+        result[1] = "PUB_RCL_PUBLISH";
+        result[2] = "PUB_RMW_PUBLISH";
+        result[3] = "PUB_DDS_WRITE";
+        result[4] = "SUB_DDS_ONDATA";
+        result[5] = "SUB_RCLCPP_TAKE_ENTER";
+        result[6] = "SUB_RCL_TAKE_ENTER";
+        result[7] = "SUB_RMW_TAKE_ENTER";
+        result[8] = "SUB_DDS_TAKE_ENTER";
+        result[9] = "SUB_DDS_TAKE_LEAVE";
+        result[10] = "SUB_RMW_TAKE_LEAVE";
+        result[11] = "SUB_RCL_TAKE_LEAVE";
+        result[12] = "SUB_RCLCPP_TAKE_LEAVE";
+        result[13] = "SUB_RCLCPP_HANDLE";
+        return result;
     }
 
     std::ofstream resultDump_;
@@ -122,8 +122,8 @@ class StartNode : public BenchmarkNode {
                 std::chrono::milliseconds(pubPeriodMs),
                 std::bind(&StartNode::timer_callback, this));
 
-	    // touch the result file.
-	    std::ofstream f(args_.resultsFilename);
+            // touch the result file.
+            std::ofstream f(args_.resultsFilename);
         }
 
     private:
@@ -151,13 +151,13 @@ class IntermediateNode : public BenchmarkNode {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
        : BenchmarkNode("intermediate_node", args, opt)
         {
-	    createResultFile();
+            createResultFile();
 
-	    publisher_ = this->create_publisher<MsgType>("/end_sub_topic", getQosProfile());
+            publisher_ = this->create_publisher<MsgType>("/end_sub_topic", getQosProfile());
             subscription_ = this->create_subscription<MsgType>(
-		"/start_pub_topic",
-		getQosProfile(), std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
-	    );
+                "/start_pub_topic",
+                getQosProfile(), std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
+            );
         }
 
     private:
@@ -177,12 +177,12 @@ class EndNode : public BenchmarkNode {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
         : BenchmarkNode("end_node", args, opt)
         {
-	    createResultFile();
+            createResultFile();
 
-	    subscription_ = this->create_subscription<MsgType>(
-		"/end_sub_topic", getQosProfile(),
-		std::bind(&EndNode::onPong, this, std::placeholders::_1)
-	    );
+            subscription_ = this->create_subscription<MsgType>(
+                "/end_sub_topic", getQosProfile(),
+                std::bind(&EndNode::onPong, this, std::placeholders::_1)
+            );
             noMsgs_ = 0;
         }
 
