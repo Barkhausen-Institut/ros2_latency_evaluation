@@ -24,7 +24,7 @@ public:
         ("m,msg-size", "Size of msg, Supported: 128b, 1kb, 10kb, 100kb, 500kb",
             cxxopts::value<std::string>(msgSize))
         ("n,node-index", "Index of the node in the chain. 0 = start node, N-1 = end node",
-            cxxopts::value<int>(nodeIndex))
+            cxxopts::value<uint>(nodeIndex))
         ("d,duration", "Duration (in seconds) of the measurement",
             cxxopts::value<uint>(duration))
         ("h,help", "Print usage")
@@ -52,7 +52,7 @@ public:
 
     float pubFrequency = 1;
     uint noNodes = -1;
-    int nodeIndex = -1;
+    uint nodeIndex = -1;
     uint duration = 10;
     std::string resultsDirectoryPath = "";
     std::string resultsFilename = "";
