@@ -1,8 +1,16 @@
 import unittest
 import csv
 import numpy as np
+import os
+
+from scripts.calc_e2e_lat import calcLatenciesEndToEnd
 
 class TestE2eLat(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self._createTestFiles()
+        self.calculatedLatencies = calcLatenciesEndToEnd('.')
+
     def _createTestFiles(self):
         NO_PROFILING_TIMESTAMPS = 14
         HEADERS = ["header_timestamp"] + [f"prof_{i}" for i in range(NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
@@ -25,6 +33,10 @@ class TestE2eLat(unittest.TestCase):
                 t_thirdNode[msgCount][f"prof_{i}"] = tMsgSent + (i + 1) * 10 + DELAY_INTER_NODE
             t_thirdNode[msgCount]["callback_timestamp"] = t_thirdNode[msgCount]["prof_13"] + 20
 
+        with open('0-3.csv', 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=HEADERS)
+            writer.writeheader()
+
         with open('1-3.csv', 'w') as f:
             writer = csv.DictWriter(f, fieldnames=HEADERS)
             writer.writeheader()
@@ -34,3 +46,7 @@ class TestE2eLat(unittest.TestCase):
             writer = csv.DictWriter(f, fieldnames=HEADERS)
             writer.writeheader()
             writer.writerows(t_thirdNode)
+    
+    def test_correctEToELatency(self) -> None:
+        pass
+        
