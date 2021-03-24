@@ -118,7 +118,7 @@ private:
             std::cerr << "Node index must be given" << std::endl;
             exit(1);
         }
-	if (qos != "reliable" and qos != "best-effort") {
+	if (qos != "reliable" && qos != "best-effort") {
 	    std::cerr << "QoS Setting invalid" << std::endl;
 	    exit(1);
 	}
