@@ -47,6 +47,11 @@ class TestE2eLat(unittest.TestCase):
             writer.writeheader()
             writer.writerows(t_thirdNode)
     
+    def tearDown(self) -> None:
+        os.remove('0-3.csv')
+        os.remove('1-3.csv')
+        os.remove('2-3.csv')
+
     def test_correctEToELatency(self) -> None:
         pass
         
