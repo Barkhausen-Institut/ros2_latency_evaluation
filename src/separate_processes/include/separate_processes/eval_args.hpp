@@ -88,8 +88,11 @@ private:
     }
 
     std::string getMiddleware() {
-        // TODO: Implement MW detection
-        return "unknown";
+	const char* rmw = std::getenv("RMW_IMPLEMENTATION");
+	if (rmw)
+	    return rmw;
+	else
+	    return "unknown";
     }
 
     void createResultFilename() {
