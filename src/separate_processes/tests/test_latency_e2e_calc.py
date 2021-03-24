@@ -10,6 +10,7 @@ class TestE2eLat(unittest.TestCase):
     def setUp(self) -> None:
         self.NO_PROFILING_TIMESTAMPS = 14
         self.T_MSG_SENT = [0, 1e3, 2e3]
+        self.NO_NODES = 3
 
         self._createTestFiles()
         self.calculatedLatencies = calcLatenciesEndToEnd('.')
@@ -18,21 +19,21 @@ class TestE2eLat(unittest.TestCase):
         for msgCount, tMsgSent in enumerate(self.T_MSG_SENT):
             # fill up second node profiling
             self.t_secondNode[msgCount]["header_timestamp"] = tMsgSent
-            self.t_secondNode[msgCount]["prof_0"] = tMsgSent + self.PROFILING_DELAYS["prof_0"][msgCount]
+            self.t_secondNode[msgCount]["prof_0"] = tMsgSent + self.PROFILING_DELAYS[0]["prof_0"][msgCount]
             for i in range(1, self.NO_PROFILING_TIMESTAMPS):
                 self.t_secondNode[msgCount][f"prof_{i}"] = (
                     self.t_secondNode[msgCount][f"prof_{i-1}"]
-                    + self.PROFILING_DELAYS[f"prof_{i}"][msgCount]
+                    + self.PROFILING_DELAYS[0][f"prof_{i}"][msgCount]
                 )
             self.t_secondNode[msgCount]["callback_timestamp"] = self.t_secondNode[msgCount]["prof_13"] + 20
 
             # fill up third node profiling
             self.t_thirdNode[msgCount]["header_timestamp"] = tMsgSent
-            self.t_thirdNode[msgCount]["prof_0"] = tMsgSent + self.PROFILING_DELAYS["prof_0"][msgCount]
+            self.t_thirdNode[msgCount]["prof_0"] = tMsgSent + self.PROFILING_DELAYS[1]["prof_0"][msgCount]
             for i in range(1, self.NO_PROFILING_TIMESTAMPS):
                 self.t_thirdNode[msgCount][f"prof_{i}"] = (
                     self.t_thirdNode[msgCount][f"prof_{i-1}"]
-                    + self.PROFILING_DELAYS[f"prof_{i}"][msgCount]
+                    + self.PROFILING_DELAYS[1][f"prof_{i}"][msgCount]
                 )
             self.t_thirdNode[msgCount]["callback_timestamp"] = self.t_thirdNode[msgCount]["prof_13"] + 20
 
@@ -58,10 +59,13 @@ class TestE2eLat(unittest.TestCase):
 
         self.t_secondNode = [dict.fromkeys(HEADERS) for i in range(NO_MSGS)]
         self.t_thirdNode = [dict.fromkeys(HEADERS) for i in range(NO_MSGS)]
-        self.PROFILING_DELAYS = {f"prof_{i}": np.zeros(len(self.T_MSG_SENT)) for i in range(self.NO_PROFILING_TIMESTAMPS)}
+        self.PROFILING_DELAYS = [
+            {f"prof_{i}": np.zeros(len(self.T_MSG_SENT)) for i in range(self.NO_PROFILING_TIMESTAMPS)}
+            for nodeIdx in range(self.NO_NODES)]
 
-        for i in range(self.NO_PROFILING_TIMESTAMPS):
-            self.PROFILING_DELAYS[f"prof_{i}"] = np.random.randint(low=10, high=15, size=NO_MSGS)
+        for nodeIdx in range(self.NO_NODES):
+            for i in range(self.NO_PROFILING_TIMESTAMPS):
+                self.PROFILING_DELAYS[nodeIdx][f"prof_{i}"] = np.random.randint(low=10, high=15, size=NO_MSGS)
 
         self._createTimestampMsgs()
         self._dumpTimestamps(HEADERS)
@@ -84,9 +88,9 @@ class TestE2eLat(unittest.TestCase):
         )
 
     def test_correctProfilingEToELatency(self) -> None:
-        for k in self.PROFILING_DELAYS.keys():
+        for k in self.PROFILING_DELAYS[0].keys():
             print(f"Evaluating: {k}")
             np.testing.assert_array_almost_equal(
                 self.calculatedLatencies[k],
-                self.PROFILING_DELAYS[k]*2
+                self.PROFILING_DELAYS[0][k] + self.PROFILING_DELAYS[1][k]
             )
