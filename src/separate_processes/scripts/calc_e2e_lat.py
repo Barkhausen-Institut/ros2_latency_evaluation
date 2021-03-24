@@ -5,6 +5,8 @@ from typing import List
 import csv
 import numpy as np
 
+NO_PROFILING_TIMESTAMPS = 14
+
 def getNodeIndexFromDumpedCsvFileName(filename: str) -> int:
     nodeIdx = int(filename.split('-')[0])
     return nodeIdx
@@ -22,15 +24,7 @@ def sortCsvFiles(csvFiles: List[str]):
     sortedFiles = {k: unsortedFiles[k] for k in sorted(unsortedFiles)}
     return sortedFiles
 
-
-def calcLatenciesEndToEnd(parentDir: str):
-    if not os.path.exists(parentDir):
-        raise FileNotFoundError(f"Directory {parentDir} does not exist.")
-
-    dumpedCsvsPerRun = glob(f"{parentDir}/*.csv")
-    sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
-    noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
-    NO_PROFILING_TIMESTAMPS = 14
+def readCsvs(sortedCsvs):
     minNoSamples = float("inf")
     maxNoSamples = -1
 
@@ -50,6 +44,17 @@ def calcLatenciesEndToEnd(parentDir: str):
         minNoSamples = min(noSamples, minNoSamples)
         maxNoSamples = max(noSamples, maxNoSamples)
 
+    return minNoSamples, maxNoSamples, timestamps
+
+def calcLatenciesEndToEnd(parentDir: str):
+    if not os.path.exists(parentDir):
+        raise FileNotFoundError(f"Directory {parentDir} does not exist.")
+
+    dumpedCsvsPerRun = glob(f"{parentDir}/*.csv")
+    sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
+    noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
+
+    minNoSamples, maxNoSamples, timestamps = readCsvs(sortedCsvs)
     latencies = {"e2e": None}
 
     tFirstNode = timestamps[2]['header_timestamp']
