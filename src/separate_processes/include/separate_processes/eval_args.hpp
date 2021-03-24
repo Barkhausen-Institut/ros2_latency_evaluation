@@ -3,6 +3,8 @@
 #include "cxxopts/include/cxxopts.hpp"
 #include <iostream>
 
+#include "json.hpp"
+
 class EvalArgs {
 public:
     EvalArgs() {}
@@ -51,6 +53,23 @@ public:
 	std::cout << "QOS profile: " << qos << std::endl;
         std::cout << "Files will be saved to: ./" << resultsDirectoryPath << std::endl;
         std::cout << "Into file " << resultsFilename << std::endl;
+    }
+
+    void dumpJsonIntoResultDirectory() {
+	using json = nlohmann::json;
+	json j;
+	j["pub_frequency"] = pubFrequency;
+	j["msg_size"] = msgSize;
+	j["duration"] = duration;
+	j["qos"] = qos;
+	j["middleware"] = getMiddleware();
+	j["node_index"] = nodeIndex;
+	j["no_nodes"] = noNodes;
+	std::cout << j.dump(4) << std::endl;
+
+	std::ofstream of(resultsDirectoryPath + "/config.json");
+	of << j.dump(4) << std::endl;
+
     }
 
     const uint NODE_NOT_SET = static_cast<uint>(-1);
