@@ -27,6 +27,8 @@ public:
             cxxopts::value<uint>(nodeIndex))
         ("d,duration", "Duration (in seconds) of the measurement",
             cxxopts::value<uint>(duration))
+	("q,qos", "QOS profile (best-effort or reliable)",
+	    cxxopts::value<std::string>(qos))
         ("h,help", "Print usage")
         ;
 
@@ -46,17 +48,21 @@ public:
         std::cout << "Number of nodes including start and end node: " << noNodes << std::endl;
         std::cout << "Msg size: " << msgSize << std::endl;
         std::cout << "Measurement duration: " << duration << std::endl;
+	std::cout << "QOS profile: " << qos << std::endl;
         std::cout << "Files will be saved to: ./" << resultsDirectoryPath << std::endl;
         std::cout << "Into file " << resultsFilename << std::endl;
     }
 
+    const uint NODE_NOT_SET = static_cast<uint>(-1);
+
     float pubFrequency = 1;
-    uint noNodes = -1;
-    uint nodeIndex = -1;
+    uint noNodes = NODE_NOT_SET;
+    uint nodeIndex = NODE_NOT_SET;
     uint duration = 10;
     std::string resultsDirectoryPath = "";
     std::string resultsFilename = "";
     std::string msgSize = "128b";
+    std::string qos = "best-effort";
 
 private:
     void createResultsDirectoryPath() {
@@ -76,6 +82,7 @@ private:
         ss << timestamp << "_";
         ss << noNodes << "Nodes_" << pubFrequency << "Hz_";
         ss << msgSize << "_" << getMiddleware() << "_";
+	ss << qos << "QOS_";
         ss << duration << "s";
         resultsDirectoryPath = ss.str();
     }
@@ -103,15 +110,20 @@ private:
             std::cout << "Message size not supported" << std::endl;
             exit(1);
         }
-        if (noNodes < 0) {
+        if (noNodes == NODE_NOT_SET) {
             std::cerr << "Number of nodes must be given" << std::endl;
             exit(1);
         }
-        if (nodeIndex < 0) {
+        if (nodeIndex == NODE_NOT_SET) {
             std::cerr << "Node index must be given" << std::endl;
             exit(1);
         }
+	if (qos != "reliable" and qos != "best-effort") {
+	    std::cerr << "QoS Setting invalid" << std::endl;
+	    exit(1);
+	}
     }
 
-    std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"128b", "1kb", "10kb", "100kb", "500kb"};
+    const std::array<std::string, 5> SUPPORTED_MSG_SIZES_ = {"128b", "1kb", "10kb", "100kb", "500kb"};
+
 };
