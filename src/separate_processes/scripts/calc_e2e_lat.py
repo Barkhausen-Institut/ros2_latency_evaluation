@@ -44,7 +44,9 @@ def readCsvs(sortedCsvs):
         minNoSamples = min(noSamples, minNoSamples)
         maxNoSamples = max(noSamples, maxNoSamples)
 
-    return minNoSamples, maxNoSamples, timestamps
+    if not (minNoSamples == maxNoSamples):
+        raise ValueError("Varying amount of samples.")
+    return minNoSamples, timestamps
 
 def calcLatenciesEndToEnd(parentDir: str):
     if not os.path.exists(parentDir):
@@ -54,19 +56,11 @@ def calcLatenciesEndToEnd(parentDir: str):
     sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
     noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
 
-    minNoSamples, maxNoSamples, timestamps = readCsvs(sortedCsvs)
+    noSamples, timestamps = readCsvs(sortedCsvs)
 
-    if not (minNoSamples == maxNoSamples):
-        raise ValueError("Varying amount of samples.")
-
-    latencies = {"e2e": None}
-
-    tFirstNode = timestamps[2]['header_timestamp']
-    tEndNode = timestamps[noNodes]['callback_timestamp']
-
-    latencies["e2e"] = np.array(tEndNode) - np.array(tFirstNode)
+    latencies = {"e2e": np.zeros(noSamples)}
     for i in range(NO_PROFILING_TIMESTAMPS):
-        latencies[f"prof_{i}"] = np.zeros(minNoSamples)
+        latencies[f"prof_{i}"] = np.zeros(noSamples)
 
     for nodeIdx in timestamps.keys():
         for profilingIdx in range(NO_PROFILING_TIMESTAMPS-2):
@@ -76,6 +70,7 @@ def calcLatenciesEndToEnd(parentDir: str):
 
         latencies["prof_0"] += np.array(timestamps[nodeIdx]["prof_0"]) - np.array(timestamps[nodeIdx]["header_timestamp"])
         latencies["prof_13"] += np.array(timestamps[nodeIdx]["prof_13"]) - np.array(timestamps[nodeIdx]["prof_12"])
+    latencies["e2e"] = np.array(timestamps[noNodes]["callback_timestamp"]) - np.array(timestamps[2]["header_timestamp"])
     return latencies
 
 if __name__ == '__main__':
