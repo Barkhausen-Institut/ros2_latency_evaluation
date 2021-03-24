@@ -20,7 +20,6 @@ def sortCsvFiles(csvFiles: List[str]):
         unsortedFiles[getNodeIndexFromDumpedCsvFileName(basePath)] = completePath
 
     sortedFiles = {k: unsortedFiles[k] for k in sorted(unsortedFiles)}
-    del sortedFiles[0]
     return sortedFiles
 
 
@@ -53,8 +52,8 @@ def calcLatenciesEndToEnd(parentDir: str):
 
     latencies = {"e2e": None}
 
-    tFirstNode = timestamps[1]['header_timestamp']
-    tEndNode = timestamps[noNodes - 1]['callback_timestamp']
+    tFirstNode = timestamps[2]['header_timestamp']
+    tEndNode = timestamps[noNodes]['callback_timestamp']
 
     latencies["e2e"] = np.array(tEndNode) - np.array(tFirstNode)
     for i in range(NO_PROFILING_TIMESTAMPS):
