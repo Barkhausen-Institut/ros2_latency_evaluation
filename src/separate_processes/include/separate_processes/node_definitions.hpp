@@ -74,9 +74,9 @@ protected:
 
     auto getQosProfile() {
 	if (args_.qos == "reliable")
-	    return rclcpp::QoS(1).reliable();
+	    return rclcpp::QoS(10).reliable();
 	else if (args_.qos == "best-effort")
-	    return rclcpp::QoS(1).best_effort();
+	    return rclcpp::QoS(10).best_effort();
 	else
 	    throw std::invalid_argument("Invalid QoS setting!");
     }
