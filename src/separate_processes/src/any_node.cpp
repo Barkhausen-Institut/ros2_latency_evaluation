@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<rclcpp::Node> node;
     if (args.nodeIndex == 0) {
         create_directory(args.resultsDirectoryPath);
+        args.dumpJsonIntoResultDirectory();
         std::cout << "Creating a START node" << std::endl;
         node = createNode<StartNode>(args);
     }

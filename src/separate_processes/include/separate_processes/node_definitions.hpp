@@ -26,13 +26,12 @@ class BenchmarkNode : public rclcpp::Node {
 public:
     BenchmarkNode(const std::string& nodeName,
                     const EvalArgs& args,
-                    const rclcpp::NodeOptions& opt) 
+                    const rclcpp::NodeOptions& opt)
     : Node(nodeName, "", opt), args_(args) {
         startTime = std::chrono::system_clock::now();
         shutdownTimer_ = create_wall_timer(std::chrono::seconds(1),
                                             [this]() { onShutdownTimer(); });
 
-        createResultFile();
    }
 
 protected:
@@ -52,8 +51,10 @@ protected:
         resultDump_.open(args_.resultsFilename);
         resultDump_ << "tracking_number,";
         resultDump_ << "header_timestamp,";
-        for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
-            resultDump_ << "prof_" + std::to_string(i) << ",";
+
+        auto names = getProfIdxMap();
+        for (uint i = 0; i < NUM_PROFILING_STEPS; i++) {
+            resultDump_ << "prof_" + names[i] << ",";
         }
         resultDump_ << "callback_timestamp";
         resultDump_ << std::endl;
@@ -64,11 +65,39 @@ protected:
         const void* rawMsg = msg.get();
         resultDump_ << msg->info.tracking_number << ",";
         resultDump_ << msg->info.timestamp << ",";
-        for (int i = 0; i < NUM_PROFILING_STEPS; i++) {
+        for (uint i = 0; i < NUM_PROFILING_STEPS; i++) {
             resultDump_ << get_profile(rawMsg, i) << ",";
         }
         resultDump_ << callbackTimestamp;
         resultDump_ << std::endl;
+    }
+
+    auto getQosProfile() {
+        if (args_.qos == "reliable")
+            return rclcpp::QoS(10).reliable();
+        else if (args_.qos == "best-effort")
+            return rclcpp::QoS(10).best_effort();
+        else
+            throw std::invalid_argument("Invalid QoS setting!");
+    }
+
+    std::map<int, std::string> getProfIdxMap() {
+        std::map<int, std::string> result;
+        result[0] = "PUB_RCLCPP_INTERPROCESS_PUBLISH 0";
+        result[1] = "PUB_RCL_PUBLISH";
+        result[2] = "PUB_RMW_PUBLISH";
+        result[3] = "PUB_DDS_WRITE";
+        result[4] = "SUB_DDS_ONDATA";
+        result[5] = "SUB_RCLCPP_TAKE_ENTER";
+        result[6] = "SUB_RCL_TAKE_ENTER";
+        result[7] = "SUB_RMW_TAKE_ENTER";
+        result[8] = "SUB_DDS_TAKE_ENTER";
+        result[9] = "SUB_DDS_TAKE_LEAVE";
+        result[10] = "SUB_RMW_TAKE_LEAVE";
+        result[11] = "SUB_RCL_TAKE_LEAVE";
+        result[12] = "SUB_RCLCPP_TAKE_LEAVE";
+        result[13] = "SUB_RCLCPP_HANDLE";
+        return result;
     }
 
     std::ofstream resultDump_;
@@ -88,10 +117,13 @@ class StartNode : public BenchmarkNode {
         {
             uint32_t pubPeriodMs = static_cast<uint32_t>(1/args_.pubFrequency * 1000);
             RCLCPP_INFO(this->get_logger(), "Publishing every %d ms", pubPeriodMs);
-            publisher_ = this->create_publisher<MsgType>("/start_pub_topic", 10);
+            publisher_ = this->create_publisher<MsgType>("/start_pub_topic", getQosProfile());
             timer_ = this->create_wall_timer(
                 std::chrono::milliseconds(pubPeriodMs),
                 std::bind(&StartNode::timer_callback, this));
+
+            // touch the result file.
+            std::ofstream f(args_.resultsFilename);
         }
 
     private:
@@ -119,9 +151,12 @@ class IntermediateNode : public BenchmarkNode {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
        : BenchmarkNode("intermediate_node", args, opt)
         {
-            publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
+            createResultFile();
+
+            publisher_ = this->create_publisher<MsgType>("/end_sub_topic", getQosProfile());
             subscription_ = this->create_subscription<MsgType>(
-                "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
+                "/start_pub_topic",
+                getQosProfile(), std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
             );
         }
 
@@ -142,8 +177,11 @@ class EndNode : public BenchmarkNode {
             const rclcpp::NodeOptions& opt = rclcpp::NodeOptions())
         : BenchmarkNode("end_node", args, opt)
         {
+            createResultFile();
+
             subscription_ = this->create_subscription<MsgType>(
-                "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
+                "/end_sub_topic", getQosProfile(),
+                std::bind(&EndNode::onPong, this, std::placeholders::_1)
             );
             noMsgs_ = 0;
         }
