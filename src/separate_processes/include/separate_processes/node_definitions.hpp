@@ -72,6 +72,15 @@ protected:
         resultDump_ << std::endl;
     }
 
+    auto getQosProfile() {
+	if (args_.qos == "reliable")
+	    return rclcpp::QoS(10).reliable();
+	else if (args_.qos == "best-effort")
+	    return rclcpp::QoS(10).best_effort();
+	else
+	    throw std::invalid_argument("Invalid QoS setting!");
+    }
+
     std::map<int, std::string> getProfIdxMap() {
 	std::map<int, std::string> result;
 	result[0] = "PUB_RCLCPP_INTERPROCESS_PUBLISH 0";
@@ -108,7 +117,7 @@ class StartNode : public BenchmarkNode {
         {
             uint32_t pubPeriodMs = static_cast<uint32_t>(1/args_.pubFrequency * 1000);
             RCLCPP_INFO(this->get_logger(), "Publishing every %d ms", pubPeriodMs);
-            publisher_ = this->create_publisher<MsgType>("/start_pub_topic", 10);
+            publisher_ = this->create_publisher<MsgType>("/start_pub_topic", getQosProfile());
             timer_ = this->create_wall_timer(
                 std::chrono::milliseconds(pubPeriodMs),
                 std::bind(&StartNode::timer_callback, this));
@@ -144,10 +153,11 @@ class IntermediateNode : public BenchmarkNode {
         {
 	    createResultFile();
 
-	    publisher_ = this->create_publisher<MsgType>("/end_sub_topic", 10);
+	    publisher_ = this->create_publisher<MsgType>("/end_sub_topic", getQosProfile());
             subscription_ = this->create_subscription<MsgType>(
-                "/start_pub_topic", 10, std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
-            );
+		"/start_pub_topic",
+		getQosProfile(), std::bind(&IntermediateNode::onPing, this, std::placeholders::_1)
+	    );
         }
 
     private:
@@ -170,8 +180,9 @@ class EndNode : public BenchmarkNode {
 	    createResultFile();
 
 	    subscription_ = this->create_subscription<MsgType>(
-                "/end_sub_topic", 10, std::bind(&EndNode::onPong, this, std::placeholders::_1)
-            );
+		"/end_sub_topic", getQosProfile(),
+		std::bind(&EndNode::onPong, this, std::placeholders::_1)
+	    );
             noMsgs_ = 0;
         }
 
