@@ -38,16 +38,16 @@ class TestE2eLat(unittest.TestCase):
             self.t_thirdNode[msgCount]["callback_timestamp"] = self.t_thirdNode[msgCount]["prof_13"] + 20
 
     def _dumpTimestamps(self, header: str):
-        with open('0-3.csv', 'w') as f:
+        with open('1-3.csv', 'w') as f:
             writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
 
-        with open('1-3.csv', 'w') as f:
+        with open('2-3.csv', 'w') as f:
             writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
             writer.writerows(self.t_secondNode)
 
-        with open('2-3.csv', 'w') as f:
+        with open('3-3.csv', 'w') as f:
             writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
             writer.writerows(self.t_thirdNode)
@@ -70,12 +70,11 @@ class TestE2eLat(unittest.TestCase):
         self._createTimestampMsgs()
         self._dumpTimestamps(HEADERS)
 
-
     
     def tearDown(self) -> None:
-        os.remove('0-3.csv')
         os.remove('1-3.csv')
         os.remove('2-3.csv')
+        os.remove('3-3.csv')
 
     def test_correctEToELatency(self) -> None:
         e2eLatencies = np.zeros(len(self.T_MSG_SENT))
