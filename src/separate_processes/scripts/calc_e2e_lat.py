@@ -67,8 +67,9 @@ def calcLatenciesEndToEnd(parentDir: str):
             latencies[f"prof_{profilingIdx+1}"] += np.array(nextProfilingTimestamps) - np.array(currProfilingTimestamps)
 
         latencies["prof_0"] += np.array(timestamps[nodeIdx]["prof_0"]) - np.array(timestamps[nodeIdx]["header_timestamp"])
-
+        latencies["prof_13"] += np.array(timestamps[nodeIdx]["prof_13"]) - np.array(timestamps[nodeIdx]["prof_12"])
     return latencies
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=str, help='relative path to directory containing dumped csvs.')
