@@ -8,23 +8,13 @@ from scripts.calc_e2e_lat import calcLatenciesEndToEnd
 class TestE2eLat(unittest.TestCase):
 
     def setUp(self) -> None:
+        self.NO_PROFILING_TIMESTAMPS = 14
+        self.T_MSG_SENT = [0, 1e3, 2e3]
+
         self._createTestFiles()
         self.calculatedLatencies = calcLatenciesEndToEnd('.')
 
-    def _createTestFiles(self):
-        self.NO_PROFILING_TIMESTAMPS = 14
-        HEADERS = ["header_timestamp"] + [f"prof_{i}" for i in range(self.NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
-        self.T_MSG_SENT = [0, 1e3, 2e3]
-        NO_MSGS = len(self.T_MSG_SENT)
-        DELAY_INTER_NODE = 5
-
-        self.t_secondNode = [dict.fromkeys(HEADERS) for i in range(NO_MSGS)]
-        self.t_thirdNode = [dict.fromkeys(HEADERS) for i in range(NO_MSGS)]
-        self.PROFILING_DELAYS = {f"prof_{i}": np.zeros(len(self.T_MSG_SENT)) for i in range(self.NO_PROFILING_TIMESTAMPS)}
-
-        for i in range(self.NO_PROFILING_TIMESTAMPS):
-            self.PROFILING_DELAYS[f"prof_{i}"] = np.random.randint(low=10, high=15, size=NO_MSGS)
-
+    def _createTimestampMsgs(self):
         for msgCount, tMsgSent in enumerate(self.T_MSG_SENT):
             # fill up second node profiling
             self.t_secondNode[msgCount]["header_timestamp"] = tMsgSent
@@ -46,19 +36,37 @@ class TestE2eLat(unittest.TestCase):
                 )
             self.t_thirdNode[msgCount]["callback_timestamp"] = self.t_thirdNode[msgCount]["prof_13"] + 20
 
+    def _dumpTimestamps(self, header: str):
         with open('0-3.csv', 'w') as f:
-            writer = csv.DictWriter(f, fieldnames=HEADERS)
+            writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
 
         with open('1-3.csv', 'w') as f:
-            writer = csv.DictWriter(f, fieldnames=HEADERS)
+            writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
             writer.writerows(self.t_secondNode)
 
         with open('2-3.csv', 'w') as f:
-            writer = csv.DictWriter(f, fieldnames=HEADERS)
+            writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
             writer.writerows(self.t_thirdNode)
+
+    def _createTestFiles(self):
+        HEADERS = ["header_timestamp"] + [f"prof_{i}" for i in range(self.NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
+        NO_MSGS = len(self.T_MSG_SENT)
+        DELAY_INTER_NODE = 5
+
+        self.t_secondNode = [dict.fromkeys(HEADERS) for i in range(NO_MSGS)]
+        self.t_thirdNode = [dict.fromkeys(HEADERS) for i in range(NO_MSGS)]
+        self.PROFILING_DELAYS = {f"prof_{i}": np.zeros(len(self.T_MSG_SENT)) for i in range(self.NO_PROFILING_TIMESTAMPS)}
+
+        for i in range(self.NO_PROFILING_TIMESTAMPS):
+            self.PROFILING_DELAYS[f"prof_{i}"] = np.random.randint(low=10, high=15, size=NO_MSGS)
+
+        self._createTimestampMsgs()
+        self._dumpTimestamps(HEADERS)
+
+
     
     def tearDown(self) -> None:
         os.remove('0-3.csv')
