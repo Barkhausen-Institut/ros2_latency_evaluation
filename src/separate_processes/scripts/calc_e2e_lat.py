@@ -24,10 +24,11 @@ def sortCsvFiles(csvFiles: List[str]):
     return sortedFiles
 
 
-def calcLatenciesEndToEnd(parentDir: str)
+def calcLatenciesEndToEnd(parentDir: str):
     if not os.path.exists(parentDir):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
-    dumpedCsvsPerRun = glob(f"{parentDir}/*")
+
+    dumpedCsvsPerRun = glob(f"{parentDir}/*.csv")
     sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
     noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
     NO_PROFILING_TIMESTAMPS = 14
