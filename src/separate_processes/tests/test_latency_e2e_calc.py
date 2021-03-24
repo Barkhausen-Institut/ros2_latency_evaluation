@@ -38,10 +38,6 @@ class TestE2eLat(unittest.TestCase):
             self.t_thirdNode[msgCount]["callback_timestamp"] = self.t_thirdNode[msgCount]["prof_13"] + 20
 
     def _dumpTimestamps(self, header: str):
-        with open('1-3.csv', 'w') as f:
-            writer = csv.DictWriter(f, fieldnames=header)
-            writer.writeheader()
-
         with open('2-3.csv', 'w') as f:
             writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
@@ -72,7 +68,6 @@ class TestE2eLat(unittest.TestCase):
 
     
     def tearDown(self) -> None:
-        os.remove('1-3.csv')
         os.remove('2-3.csv')
         os.remove('3-3.csv')
 
