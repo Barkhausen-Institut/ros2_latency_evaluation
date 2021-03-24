@@ -1,5 +1,6 @@
 import sys
 import os
+import datetime
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -18,12 +19,15 @@ def generate_launch_description():
 
     noNodes = intNodes + 2
 
+    prefix = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
 
     nodeArgsList = ['--publisher-frequency', pubFrequency,
                     '--no-nodes', str(noNodes),
                     '--msg-size', msgSize,
                     '--duration', duration,
-                    '--qos', qos]
+                    '--qos', qos,
+                    '--prefix', prefix]
     nodes = []
     nodes.append(Node(
                     package=PKG,

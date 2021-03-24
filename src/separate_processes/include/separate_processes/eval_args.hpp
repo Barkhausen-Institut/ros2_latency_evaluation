@@ -19,6 +19,8 @@ public:
         cxxopts::Options options(argv[0], "ROS2 performance benchmark in separate processes");
         options.allow_unrecognised_options();
         options.add_options()
+	("prefix", "Prefix for the result directory name",
+	    cxxopts::value<std::string>(dirPrefix))
         ("N,no-nodes", "Number of Nodes",
             cxxopts::value<uint>(noNodes))
         ("f,publisher-frequency", "Publisher Frequency of start node",
@@ -58,6 +60,8 @@ public:
     void dumpJsonIntoResultDirectory() {
 	using json = nlohmann::json;
 	json j;
+	j["timestamp"] = getTimestamp();
+	j["dirPrefix"] = dirPrefix;
 	j["pub_frequency"] = pubFrequency;
 	j["msg_size"] = msgSize;
 	j["duration"] = duration;
@@ -78,16 +82,28 @@ public:
     uint noNodes = NODE_NOT_SET;
     uint nodeIndex = NODE_NOT_SET;
     uint duration = 10;
-    std::string resultsDirectoryPath = "";
-    std::string resultsFilename = "";
+    std::string dirPrefix = "";
     std::string msgSize = "128b";
     std::string qos = "best-effort";
+
+    std::string resultsDirectoryPath = "";
+    std::string resultsFilename = "";
 
 private:
     void createResultsDirectoryPath() {
         std::ostringstream ss;
         ss.precision(2);
 
+        ss << "results/";
+        ss << dirPrefix << "_";
+        ss << noNodes << "Nodes_" << pubFrequency << "Hz_";
+        ss << msgSize << "_" << getMiddleware() << "_";
+	ss << qos << "QOS_";
+        ss << duration << "s";
+        resultsDirectoryPath = ss.str();
+    }
+
+    std::string getTimestamp() const {
         // get current time stamp
         time_t now;
         struct tm* timeinfo;
@@ -97,16 +113,10 @@ private:
         timeinfo = localtime(&now);
         strftime(timestamp, 100, "%Y-%m-%d_%H-%M-%S", timeinfo);
 
-        ss << "results/";
-        ss << timestamp << "_";
-        ss << noNodes << "Nodes_" << pubFrequency << "Hz_";
-        ss << msgSize << "_" << getMiddleware() << "_";
-	ss << qos << "QOS_";
-        ss << duration << "s";
-        resultsDirectoryPath = ss.str();
+	return timestamp;
     }
 
-    std::string getMiddleware() {
+    std::string getMiddleware() const {
 	const char* rmw = std::getenv("RMW_IMPLEMENTATION");
 	if (rmw)
 	    return rmw;
@@ -142,6 +152,10 @@ private:
         }
 	if (qos != "reliable" && qos != "best-effort") {
 	    std::cerr << "QoS Setting invalid" << std::endl;
+	    exit(1);
+	}
+	if (dirPrefix == "") {
+	    std::cerr << "dirPrefix not set!" << std::endl;
 	    exit(1);
 	}
     }
