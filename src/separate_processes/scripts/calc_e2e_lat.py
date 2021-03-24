@@ -55,6 +55,10 @@ def calcLatenciesEndToEnd(parentDir: str):
     noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
 
     minNoSamples, maxNoSamples, timestamps = readCsvs(sortedCsvs)
+
+    if not (minNoSamples == maxNoSamples):
+        raise ValueError("Varying amount of samples.")
+
     latencies = {"e2e": None}
 
     tFirstNode = timestamps[2]['header_timestamp']
