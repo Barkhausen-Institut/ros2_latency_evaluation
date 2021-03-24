@@ -44,7 +44,7 @@ def calcLatenciesEndToEnd(parentDir: str):
             reader = csv.DictReader(f)
             for row in reader:
                 for header in timestampHeaders:
-                    timestampsCurrFile[header].append(int(row[header]))
+                    timestampsCurrFile[header].append(float(row[header]))
                 noSamples += 1
 
             timestamps[nodeIdx] = timestampsCurrFile
