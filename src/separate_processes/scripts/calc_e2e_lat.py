@@ -6,7 +6,22 @@ import csv
 import numpy as np
 
 NO_PROFILING_TIMESTAMPS = 14
-
+PROF_IDX_LABELS_MAPPING = [
+        "prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0",
+        "prof_PUB_RCL_PUBLISH",
+        "prof_PUB_RMW_PUBLISH",
+        "prof_PUB_DDS_WRITE",
+        "prof_SUB_DDS_ONDATA",
+        "prof_SUB_RCLCPP_TAKE_ENTER",
+        "prof_SUB_RCL_TAKE_ENTER",
+        "prof_SUB_RMW_TAKE_ENTER",
+        "prof_SUB_DDS_TAKE_ENTER",
+        "prof_SUB_DDS_TAKE_LEAVE",
+        "prof_SUB_RMW_TAKE_LEAVE",
+        "prof_SUB_RCL_TAKE_LEAVE",
+        "prof_SUB_RCLCPP_TAKE_LEAVE",
+        "prof_SUB_RCLCPP_HANDLE"
+    ]
 def getNodeIndexFromDumpedCsvFileName(filename: str) -> int:
     nodeIdx = int(filename.split('-')[0])
     return nodeIdx
@@ -22,13 +37,14 @@ def sortCsvFiles(csvFiles: List[str]):
         unsortedFiles[getNodeIndexFromDumpedCsvFileName(basePath)] = completePath
 
     sortedFiles = {k: unsortedFiles[k] for k in sorted(unsortedFiles)}
+    del sortedFiles[1]
     return sortedFiles
 
 def readCsvs(sortedCsvs):
     minNoSamples = float("inf")
     maxNoSamples = -1
 
-    timestampHeaders = ["header_timestamp"] + [f"prof_{i}" for i in range(NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
+    timestampHeaders = ["header_timestamp"] + [PROF_IDX_LABELS_MAPPING[i] for i in range(NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
     timestamps = {}
     for nodeIdx, filePath in sortedCsvs.items():
         noSamples = 0
@@ -60,16 +76,16 @@ def calcLatenciesEndToEnd(parentDir: str):
 
     latencies = {"e2e": np.zeros(noSamples)}
     for i in range(NO_PROFILING_TIMESTAMPS):
-        latencies[f"prof_{i}"] = np.zeros(noSamples)
+        latencies[PROF_IDX_LABELS_MAPPING[i]] = np.zeros(noSamples)
 
     for nodeIdx in timestamps.keys():
-        for profilingIdx in range(NO_PROFILING_TIMESTAMPS-2):
-            currProfilingTimestamps = timestamps[nodeIdx][f"prof_{profilingIdx}"]
-            nextProfilingTimestamps = timestamps[nodeIdx][f"prof_{profilingIdx+1}"]
-            latencies[f"prof_{profilingIdx+1}"] += np.array(nextProfilingTimestamps) - np.array(currProfilingTimestamps)
+        for i in range(NO_PROFILING_TIMESTAMPS-2):
+            currProfilingTimestamps = timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i]]
+            nextProfilingTimestamps = timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i+1]]
+            latencies[PROF_IDX_LABELS_MAPPING[i+1]] += np.array(nextProfilingTimestamps) - np.array(currProfilingTimestamps)
 
-        latencies["prof_0"] += np.array(timestamps[nodeIdx]["prof_0"]) - np.array(timestamps[nodeIdx]["header_timestamp"])
-        latencies["prof_13"] += np.array(timestamps[nodeIdx]["prof_13"]) - np.array(timestamps[nodeIdx]["prof_12"])
+        latencies[PROF_IDX_LABELS_MAPPING[0]] += np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[0]]) - np.array(timestamps[nodeIdx]["header_timestamp"])
+        latencies[PROF_IDX_LABELS_MAPPING[13]] += np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[13]]) - np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i]])
     latencies["e2e"] = np.array(timestamps[noNodes]["callback_timestamp"]) - np.array(timestamps[2]["header_timestamp"])
     return latencies
 
@@ -79,3 +95,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     latencies = calcLatenciesEndToEnd(args.directory)
+    breakpoint()
