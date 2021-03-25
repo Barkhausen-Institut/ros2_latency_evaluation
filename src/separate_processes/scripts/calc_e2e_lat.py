@@ -95,7 +95,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     noSamples, latencies = calcLatenciesEndToEnd(args.directory)
-    with open("latencies.csv", "w") as f:
+    with open(os.path.join(args.directory, "latencies.csv"), "w") as f:
         writer = csv.DictWriter(f, fieldnames=latencies.keys())
         writer.writeheader()
 
