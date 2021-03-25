@@ -87,12 +87,20 @@ def calcLatenciesEndToEnd(parentDir: str):
         latencies[PROF_IDX_LABELS_MAPPING[0]] += np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[0]]) - np.array(timestamps[nodeIdx]["header_timestamp"])
         latencies[PROF_IDX_LABELS_MAPPING[13]] += np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[13]]) - np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i]])
     latencies["e2e"] = np.array(timestamps[noNodes]["callback_timestamp"]) - np.array(timestamps[2]["header_timestamp"])
-    return latencies
+    return noSamples, latencies
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=str, help='relative path to directory containing dumped csvs.')
     args = parser.parse_args()
 
-    latencies = calcLatenciesEndToEnd(args.directory)
-    breakpoint()
+    noSamples, latencies = calcLatenciesEndToEnd(args.directory)
+    with open("latencies.csv", "w") as f:
+        writer = csv.DictWriter(f, fieldnames=latencies.keys())
+        writer.writeheader()
+
+        for sample in range(noSamples):
+            data = {}
+            for k in latencies.keys():
+                data[k] = latencies[k][sample]
+            writer.writerow(data)
