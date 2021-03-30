@@ -27,7 +27,8 @@ def getNodeIndexFromDumpedCsvFileName(filename: str) -> int:
     return nodeIdx
 
 def getNoNodesFromDumpedCsvFileName(filename: str) -> int:
-    noNodes = int(filename.split('-')[1][0])
+    noNodes = filename.split('-')[1]
+    noNodes = int(noNodes[:-4])
     return noNodes
 
 def sortCsvFiles(csvFiles: List[str]):
@@ -41,6 +42,7 @@ def sortCsvFiles(csvFiles: List[str]):
     return sortedFiles
 
 def readCsvs(sortedCsvs):
+    trackingNumbers = {}
     minNoSamples = float("inf")
     maxNoSamples = -1
 
@@ -50,25 +52,29 @@ def readCsvs(sortedCsvs):
         noSamples = 0
         timestampsCurrFile = {k: [] for k in timestampHeaders}
         with open(filePath) as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, delimiter=',')
             for row in reader:
                 for header in timestampHeaders:
                     timestampsCurrFile[header].append(float(row[header]))
-                noSamples += 1
+                trackingNumbers[nodeIdx].append(int(row["tracking_number"]))
 
             timestamps[nodeIdx] = timestampsCurrFile
         minNoSamples = min(noSamples, minNoSamples)
         maxNoSamples = max(noSamples, maxNoSamples)
+        if not (minNoSamples == maxNoSamples):
+            breakpoint()
+            print("WARNING: Varying amount of samples.")
+            print(f"Encountered for Node idx {nodeIdx} and file {filePath}")
+            print("Using minNoSamples")
 
-    if not (minNoSamples == maxNoSamples):
-        raise ValueError("Varying amount of samples.")
     return minNoSamples, timestamps
 
+def discardDroppedMsgs(timestamps):
+    for 
 def calcLatenciesEndToEnd(parentDir: str):
     if not os.path.exists(parentDir):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
-
-    dumpedCsvsPerRun = glob(f"{parentDir}/*.csv")
+    dumpedCsvsPerRun = glob(f"{parentDir}/[0-9]*-[0-9]*.csv")
     sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
     noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
 
@@ -94,13 +100,15 @@ if __name__ == '__main__':
     parser.add_argument('directory', type=str, help='relative path to directory containing dumped csvs.')
     args = parser.parse_args()
 
-    noSamples, latencies = calcLatenciesEndToEnd(args.directory)
-    with open(os.path.join(args.directory, "latencies.csv"), "w") as f:
-        writer = csv.DictWriter(f, fieldnames=latencies.keys())
-        writer.writeheader()
+    for resultsDir in glob(os.path.join(args.directory, "*")):
+        print(f"Parsing directory: {resultsDir}")
+        noSamples, latencies = calcLatenciesEndToEnd(resultsDir)
+        with open(os.path.join(resultsDir, "latencies.csv"), "w") as f:
+            writer = csv.DictWriter(f, fieldnames=latencies.keys())
+            writer.writeheader()
 
-        for sample in range(noSamples):
-            data = {}
-            for k in latencies.keys():
-                data[k] = latencies[k][sample]
-            writer.writerow(data)
+            for sample in range(noSamples):
+                data = {}
+                for k in latencies.keys():
+                    data[k] = latencies[k][sample]
+                writer.writerow(data)
