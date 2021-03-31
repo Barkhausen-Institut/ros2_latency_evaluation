@@ -1,11 +1,10 @@
 import os
 import argparse
 from glob import glob
-from typing import List
+from typing import List, Tuple
 import csv
 import numpy as np
 
-NO_PROFILING_TIMESTAMPS = 14
 PROF_IDX_LABELS_MAPPING = [
         "prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0",
         "prof_PUB_RCL_PUBLISH",
@@ -22,6 +21,9 @@ PROF_IDX_LABELS_MAPPING = [
         "prof_SUB_RCLCPP_TAKE_LEAVE",
         "prof_SUB_RCLCPP_HANDLE"
     ]
+
+NO_PROFILING_TIMESTAMPS = len(PROF_IDX_LABELS_MAPPING)
+
 def getNodeIndexFromDumpedCsvFileName(filename: str) -> int:
     nodeIdx = int(filename.split('-')[0])
     return nodeIdx
@@ -42,6 +44,7 @@ def sortCsvFiles(csvFiles: List[str]):
     return sortedFiles
 
 def findDroppedMsgs(trackingNumbers: List[np.array]) -> np.array:
+    breakpoint()
     trackingNumbersDropped = [np.array([]) for msgIdx in range(len(trackingNumbers)-1)]
     firstMsg_trackingNumbers = trackingNumbers[0]
     msgs_trackingNumbers = trackingNumbers[1:]
@@ -59,15 +62,20 @@ def findDroppedMsgs(trackingNumbers: List[np.array]) -> np.array:
     print(f"Messages with following tracking numbers are to be deleted: {trackingNumbersDropped}.")
     return trackingNumbersDropped
 
-def readCsvs(sortedCsvs):
+def removeDroppedMsgs(csvContents: List[np.array], trackingNumbers: np.array) -> List[np.array]:
+    return csvContents
+
+def readCsvs(sortedCsvs) -> Tuple[List[str], List[np.array]]:
+    with open(sortedCsvs[2]) as f:
+        header = f.readline().split(',')
+
     csvContents = []
     for nodeIdx, filePath in sortedCsvs.items():
-        with open(filePath) as f:
-            header = f.readline().split(',')
-            csvContents.append(np.genfromtxt(filePath, delimiter=",", skip_header=1))
-
-    trackingNumbers_droppedMsgs = findDroppedMsgs(csvContents)
-    return 1, timestamps
+        csvContents.append(np.genfromtxt(filePath, delimiter=",", skip_header=1))
+    trackingNumbers = [content[:, 0] for content in csvContents]
+    trackingNumbers_droppedMsgs = findDroppedMsgs(trackingNumbers)
+    csvContents = removeDroppedMsgs(csvContents, trackingNumbers_droppedMsgs)
+    return header, csvContents
 
 def calcLatenciesEndToEnd(parentDir: str):
     if not os.path.exists(parentDir):
@@ -76,22 +84,16 @@ def calcLatenciesEndToEnd(parentDir: str):
     sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
     noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
 
-    noSamples, timestamps = readCsvs(sortedCsvs)
+    header, csvContents = readCsvs(sortedCsvs)
+    NO_SAMPLES = 10000
+    latenciesProfiling = np.zeros((NO_SAMPLES, NO_PROFILING_TIMESTAMPS))
 
-    latencies = {"e2e": np.zeros(noSamples)}
-    for i in range(NO_PROFILING_TIMESTAMPS):
-        latencies[PROF_IDX_LABELS_MAPPING[i]] = np.zeros(noSamples)
+    for msg in csvContents:
+        for profIdx in range(1, NO_PROFILING_TIMESTAMPS):
+            latenciesProfiling[:, profIdx+1] += msg[:, profIdx+1] - msg[:, profIdx]
 
-    for nodeIdx in timestamps.keys():
-        for i in range(NO_PROFILING_TIMESTAMPS-2):
-            currProfilingTimestamps = timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i]]
-            nextProfilingTimestamps = timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i+1]]
-            latencies[PROF_IDX_LABELS_MAPPING[i+1]] += np.array(nextProfilingTimestamps) - np.array(currProfilingTimestamps)
-
-        latencies[PROF_IDX_LABELS_MAPPING[0]] += np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[0]]) - np.array(timestamps[nodeIdx]["header_timestamp"])
-        latencies[PROF_IDX_LABELS_MAPPING[13]] += np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[13]]) - np.array(timestamps[nodeIdx][PROF_IDX_LABELS_MAPPING[i]])
-    latencies["e2e"] = np.array(timestamps[noNodes]["callback_timestamp"]) - np.array(timestamps[2]["header_timestamp"])
-    return noSamples, latencies
+        latenciesProfiling[:, 0] += msg[:, 1] - msg[:, 0]
+    return NO_SAMPLES, latenciesProfiling
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
