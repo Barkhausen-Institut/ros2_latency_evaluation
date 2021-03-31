@@ -41,7 +41,7 @@ def sortCsvFiles(csvFiles: List[str]):
     del sortedFiles[1]
     return sortedFiles
 
-def findDroppedMsgs(trackingNumbers: List[np.array]):
+def findDroppedMsgs(trackingNumbers: List[np.array]) -> np.array:
     trackingNumbersDropped = [np.array([]) for msgIdx in range(len(trackingNumbers)-1)]
     firstMsg_trackingNumbers = trackingNumbers[0]
     msgs_trackingNumbers = trackingNumbers[1:]
@@ -61,8 +61,6 @@ def findDroppedMsgs(trackingNumbers: List[np.array]):
 
 def readCsvs(sortedCsvs):
     trackingNumbers = []
-    minNoSamples = float("inf")
-    maxNoSamples = -1
 
     timestampHeaders = ["header_timestamp"] + [PROF_IDX_LABELS_MAPPING[i] for i in range(NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
     timestamps = {}
@@ -80,15 +78,8 @@ def readCsvs(sortedCsvs):
             timestamps[nodeIdx] = timestampsCurrFile
         trackingNumbers.append(currTrackingNumbers)
 
-        minNoSamples = min(noSamples, minNoSamples)
-        maxNoSamples = max(noSamples, maxNoSamples)
-        if not (minNoSamples == maxNoSamples):
-            print("WARNING: Varying amount of samples.")
-            print(f"Encountered for Node idx {nodeIdx} and file {filePath}")
-            print("Using minNoSamples")
-
-    discardDroppedMsgs(trackingNumbers)
-    return minNoSamples, timestamps
+    trackingNumbers_droppedMsgs = findDroppedMsgs(trackingNumbers)
+    return 1, timestamps
 
 def calcLatenciesEndToEnd(parentDir: str):
     if not os.path.exists(parentDir):
