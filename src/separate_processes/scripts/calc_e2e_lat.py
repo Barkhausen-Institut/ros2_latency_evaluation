@@ -60,25 +60,13 @@ def findDroppedMsgs(trackingNumbers: List[np.array]) -> np.array:
     return trackingNumbersDropped
 
 def readCsvs(sortedCsvs):
-    trackingNumbers = []
-
-    timestampHeaders = ["header_timestamp"] + [PROF_IDX_LABELS_MAPPING[i] for i in range(NO_PROFILING_TIMESTAMPS)] + ["callback_timestamp"]
-    timestamps = {}
+    csvContents = []
     for nodeIdx, filePath in sortedCsvs.items():
-        noSamples = 0
-        timestampsCurrFile = {k: [] for k in timestampHeaders}
-        currTrackingNumbers = np.array([])
         with open(filePath) as f:
-            reader = csv.DictReader(f, delimiter=',')
-            for row in reader:
-                for header in timestampHeaders:
-                    timestampsCurrFile[header].append(float(row[header]))
-                currTrackingNumbers = np.append(currTrackingNumbers, int(row["tracking_number"]))
+            header = f.readline().split(',')
+            csvContents.append(np.genfromtxt(filePath, delimiter=",", skip_header=1))
 
-            timestamps[nodeIdx] = timestampsCurrFile
-        trackingNumbers.append(currTrackingNumbers)
-
-    trackingNumbers_droppedMsgs = findDroppedMsgs(trackingNumbers)
+    trackingNumbers_droppedMsgs = findDroppedMsgs(csvContents)
     return 1, timestamps
 
 def calcLatenciesEndToEnd(parentDir: str):
