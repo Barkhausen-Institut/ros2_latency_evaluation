@@ -4,6 +4,8 @@ from glob import glob
 from typing import List, Tuple
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
 PROF_IDX_LABELS_MAPPING = [
         "prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0",
@@ -43,7 +45,7 @@ def sortCsvFiles(csvFiles: List[str]):
     del sortedFiles[1]
     return sortedFiles
 
-def findDroppedMsgs(trackingNumbers: List[np.array]) -> np.array:
+def findDroppedMsgs2(trackingNumbers: List[np.array]) -> np.array:
     breakpoint()
     trackingNumbersDropped = [np.array([]) for msgIdx in range(len(trackingNumbers)-1)]
     firstMsg_trackingNumbers = trackingNumbers[0]
@@ -95,13 +97,70 @@ def calcLatenciesEndToEnd(parentDir: str):
         latenciesProfiling[:, 0] += msg[:, 1] - msg[:, 0]
     return NO_SAMPLES, latenciesProfiling
 
+def loadCsvs(files: List[str]):
+    header = None
+    contents = []
+    for fn in files:
+        print(f"File {fn}")
+        content = pd.read_csv(fn, dtype=np.int64)
+        currentHeader = list(content.columns)
+        if header is None:
+            header = currentHeader
+        else:
+            assert header == currentHeader
+        contents.append(content)
+    return contents
+
+
+def findValidMsgs(csvContents):
+    history = []
+    validMsgs = None
+    startMsgs = None
+    for i, content in enumerate(csvContents):
+        currentMsgs = set(content['tracking_number'])
+        if validMsgs is None:
+            startMsgs = currentMsgs
+            validMsgs = currentMsgs
+        else:
+            validMsgs = validMsgs & currentMsgs
+        print(f"Dropped in file {i}: {startMsgs - validMsgs}")
+        history.append(len(validMsgs))
+    return validMsgs, history
+
+def extractValidMsgs(csvContents):
+    validMsgs, history = findValidMsgs(csvContents)
+    if False:
+        plt.plot(history, '-x')
+        plt.show()
+
+    return [c[c['tracking_number'].isin(validMsgs)] for c in csvContents]
+
+def getSortedNamesInDir(parentDir):
+    dumpedCsvsPerRun = glob(f"{parentDir}/[0-9]*-[0-9]*.csv")
+    noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
+    sortedNames = [f"{parentDir}/{i}-{noNodes}.csv" for i in range(2, noNodes+1)]
+    for f in sortedNames:
+        assert os.path.isfile(f), f"{f} does not exist"
+    return sortedNames
+
+def processDirectory(parentDir: str):
+    if not os.path.exists(parentDir):
+        raise FileNotFoundError(f"Directory {parentDir} does not exist.")
+    sortedNames = getSortedNamesInDir(parentDir)
+    csvContents = loadCsvs(sortedNames)
+
+    validCsvs = extractValidMsgs(csvContents)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=str, help='relative path to directory containing dumped csvs.')
     args = parser.parse_args()
 
-    for resultsDir in glob(os.path.join(args.directory, "*")):
+    for resultsDir in glob(os.path.join(args.directory, "*"))[1:]:
         print(f"Parsing directory: {resultsDir}")
+        processDirectory(resultsDir)
+        break
         noSamples, latencies = calcLatenciesEndToEnd(resultsDir)
         with open(os.path.join(resultsDir, "latencies.csv"), "w") as f:
             writer = csv.DictWriter(f, fieldnames=latencies.keys())
