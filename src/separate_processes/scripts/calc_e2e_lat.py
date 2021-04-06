@@ -92,6 +92,7 @@ def extractValidMsgs(csvContents):
             return True
         return all(first == x for x in iterator)
     assert all_equal([list(r['tracking_number']) for r in result])
+    assert all_equal([list(r.index) for r in result])
 
     return result
 
@@ -116,7 +117,6 @@ def processDirectory(parentDir: str):
     validCsvs = extractValidMsgs(csvContents)
 
     result = calcLatencies(validCsvs)
-    print (result)
     return result
 
 
@@ -127,7 +127,10 @@ if __name__ == '__main__':
 
     for resultsDir in glob(os.path.join(args.directory, "*"))[1:]:
         print(f"Parsing directory: {resultsDir}")
-        processDirectory(resultsDir)
+        result = processDirectory(resultsDir)
+        result.to_csv(f"{resultsDir}/latencies.csv", index=False)
+        print (result)
+
         break
         noSamples, latencies = calcLatenciesEndToEnd(resultsDir)
         with open(os.path.join(resultsDir, "latencies.csv"), "w") as f:
