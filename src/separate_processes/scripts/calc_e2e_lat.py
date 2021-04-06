@@ -35,68 +35,6 @@ def getNoNodesFromDumpedCsvFileName(filename: str) -> int:
     noNodes = int(noNodes[:-4])
     return noNodes
 
-def sortCsvFiles(csvFiles: List[str]):
-    filesBasenames = [os.path.basename(f) for f in csvFiles]
-    unsortedFiles = {}
-    for basePath, completePath in zip(filesBasenames, csvFiles):
-        unsortedFiles[getNodeIndexFromDumpedCsvFileName(basePath)] = completePath
-
-    sortedFiles = {k: unsortedFiles[k] for k in sorted(unsortedFiles)}
-    del sortedFiles[1]
-    return sortedFiles
-
-def findDroppedMsgs2(trackingNumbers: List[np.array]) -> np.array:
-    breakpoint()
-    trackingNumbersDropped = [np.array([]) for msgIdx in range(len(trackingNumbers)-1)]
-    firstMsg_trackingNumbers = trackingNumbers[0]
-    msgs_trackingNumbers = trackingNumbers[1:]
-
-    for trackingNumber in firstMsg_trackingNumbers:
-        for msgIdx, msg in enumerate(trackingNumbers[1:]):
-            for i, t in enumerate(msg):
-                if not (t == trackingNumber) and (i == len(msg) - 1):
-                    trackingNumbersDropped[msgIdx] = np.append(
-                        trackingNumbersDropped[msgIdx], trackingNumber
-                    )
-                elif (t == trackingNumber):
-                    break
-    trackingNumbersDropped = np.concatenate(trackingNumbersDropped)
-    print(f"Messages with following tracking numbers are to be deleted: {trackingNumbersDropped}.")
-    return trackingNumbersDropped
-
-def removeDroppedMsgs(csvContents: List[np.array], trackingNumbers: np.array) -> List[np.array]:
-    return csvContents
-
-def readCsvs(sortedCsvs) -> Tuple[List[str], List[np.array]]:
-    with open(sortedCsvs[2]) as f:
-        header = f.readline().split(',')
-
-    csvContents = []
-    for nodeIdx, filePath in sortedCsvs.items():
-        csvContents.append(np.genfromtxt(filePath, delimiter=",", skip_header=1))
-    trackingNumbers = [content[:, 0] for content in csvContents]
-    trackingNumbers_droppedMsgs = findDroppedMsgs(trackingNumbers)
-    csvContents = removeDroppedMsgs(csvContents, trackingNumbers_droppedMsgs)
-    return header, csvContents
-
-def calcLatenciesEndToEnd(parentDir: str):
-    if not os.path.exists(parentDir):
-        raise FileNotFoundError(f"Directory {parentDir} does not exist.")
-    dumpedCsvsPerRun = glob(f"{parentDir}/[0-9]*-[0-9]*.csv")
-    sortedCsvs = sortCsvFiles(dumpedCsvsPerRun)
-    noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
-
-    header, csvContents = readCsvs(sortedCsvs)
-    NO_SAMPLES = 10000
-    latenciesProfiling = np.zeros((NO_SAMPLES, NO_PROFILING_TIMESTAMPS))
-
-    for msg in csvContents:
-        for profIdx in range(1, NO_PROFILING_TIMESTAMPS):
-            latenciesProfiling[:, profIdx+1] += msg[:, profIdx+1] - msg[:, profIdx]
-
-        latenciesProfiling[:, 0] += msg[:, 1] - msg[:, 0]
-    return NO_SAMPLES, latenciesProfiling
-
 def loadCsvs(files: List[str]):
     header = None
     contents = []
@@ -110,6 +48,15 @@ def loadCsvs(files: List[str]):
             assert header == currentHeader
         contents.append(content)
     return contents
+
+def getSortedNamesInDir(parentDir):
+    dumpedCsvsPerRun = glob(f"{parentDir}/[0-9]*-[0-9]*.csv")
+    noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
+    sortedNames = [f"{parentDir}/{i}-{noNodes}.csv" for i in range(2, noNodes+1)]
+    for f in sortedNames:
+        assert os.path.isfile(f), f"{f} does not exist"
+    return sortedNames
+
 
 
 def findValidMsgs(csvContents):
@@ -133,23 +80,44 @@ def extractValidMsgs(csvContents):
         plt.plot(history, '-x')
         plt.show()
 
-    return [c[c['tracking_number'].isin(validMsgs)] for c in csvContents]
+    result =  [c[c['tracking_number'].isin(validMsgs)] for c in csvContents]
+    idx = result[0].index
+    for r in result:
+        r.set_index(idx, inplace=True)
+    def all_equal(iterator):
+        iterator = iter(iterator)
+        try:
+            first = next(iterator)
+        except StopIteration:
+            return True
+        return all(first == x for x in iterator)
+    assert all_equal([list(r['tracking_number']) for r in result])
 
-def getSortedNamesInDir(parentDir):
-    dumpedCsvsPerRun = glob(f"{parentDir}/[0-9]*-[0-9]*.csv")
-    noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
-    sortedNames = [f"{parentDir}/{i}-{noNodes}.csv" for i in range(2, noNodes+1)]
-    for f in sortedNames:
-        assert os.path.isfile(f), f"{f} does not exist"
-    return sortedNames
+    return result
+
+def calcLatencies(content):
+    def end2end():
+        last = content[-1]
+        lastColumn = PROF_IDX_LABELS_MAPPING[-1]
+        latencies = last['callback_timestamp'] - last['header_timestamp']
+        return latencies
+
+    result = pd.DataFrame({'tracking_number': content[0]['tracking_number']},
+                          index=content[0].index)
+    result['end2end'] = end2end()
+    return result
+
 
 def processDirectory(parentDir: str):
     if not os.path.exists(parentDir):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
     sortedNames = getSortedNamesInDir(parentDir)
     csvContents = loadCsvs(sortedNames)
-
     validCsvs = extractValidMsgs(csvContents)
+
+    result = calcLatencies(validCsvs)
+    print (result)
+    return result
 
 
 if __name__ == '__main__':
