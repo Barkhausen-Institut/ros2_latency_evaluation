@@ -7,6 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# set to false to suppress showing result diagrams
+SHOW = False
+
 PROF_IDX_LABELS_MAPPING = [
         "prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0",
         "prof_PUB_RCL_PUBLISH",
@@ -90,9 +93,13 @@ def findValidMsgs(csvContents):
 
 def extractValidMsgs(csvContents):
     validMsgs, history = findValidMsgs(csvContents)
-    if False:
+    if True:
+        plt.figure()
         plt.plot(history, '-x')
-        plt.show()
+        plt.title('Messages going through nodes')
+        plt.xlabel('Node index')
+        plt.ylabel('Number of messages received until node X')
+        plt.grid(True)
 
     result =  [c[c['tracking_number'].isin(validMsgs)] for c in csvContents]
     idx = result[0].index
@@ -134,10 +141,40 @@ def calcLatencies(content):
     result['end2end'] = end2end()
     for catName, catColumns in PROF_CATEGORIES.items():
         result = result.join(category(catName, catColumns))
+    sumOverCategories = sum(result[cat] for cat in PROF_CATEGORIES.keys())
+    result['sumOverCategories'] = sumOverCategories
     return result
 
+QUANTILES = [0.1, 1, 5, 10, 25, 40, 50, 60, 70, 80, 90, 95, 99, 99.9]
+
 def calcStatistics(latencies):
-    pass
+    def columnStats(name, column):
+        result = dict()
+        result[f"{name}_mean"] = column.mean()
+        result[f"{name}_median"] = column.quantile(0.5)
+        for q in QUANTILES:
+            result[f"{name}_q{q}"] = column.quantile(q/100.0)
+        return result
+
+    columns = list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories']
+    result = dict()
+    for c in columns:
+        result.update(columnStats(c, latencies[c]))
+    return result
+
+def plotStats(stats):
+    plt.figure()
+
+    for cat in list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories']:
+        cdf = [stats[f"{cat}_q{q}"] for q in QUANTILES]
+        plt.plot(QUANTILES, cdf, '-x', label=cat)
+        plt.xlabel('Quantile')
+        plt.ylabel('Nanoseconds')
+    plt.legend()
+    plt.title('Quantile distribution of Latency categories')
+    plt.grid(True)
+    if SHOW:
+        plt.show()
 
 
 def processDirectory(parentDir: str):
@@ -151,6 +188,11 @@ def processDirectory(parentDir: str):
     latencies.to_csv(f"{parentDir}/latencies.csv", index=False)
 
     stats = calcStatistics(latencies)
+    print (stats)
+    plotStats(stats)
+    with open(f"{parentDir}/stats.json", "w") as f:
+        import json
+        print(json.dumps(stats, indent=4), file=f)
 
 
 if __name__ == '__main__':
