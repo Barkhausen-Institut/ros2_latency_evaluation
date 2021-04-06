@@ -8,27 +8,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # set to false to suppress showing result diagrams
-SHOW = False
+SHOW = True
 
-PROF_IDX_LABELS_MAPPING = [
-        "prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0",
-        "prof_PUB_RCL_PUBLISH",
-        "prof_PUB_RMW_PUBLISH",
-        "prof_PUB_DDS_WRITE",
-        "prof_SUB_DDS_ONDATA",
-        "prof_SUB_RCLCPP_TAKE_ENTER",
-        "prof_SUB_RCL_TAKE_ENTER",
-        "prof_SUB_RMW_TAKE_ENTER",
-        "prof_SUB_DDS_TAKE_ENTER",
-        "prof_SUB_DDS_TAKE_LEAVE",
-        "prof_SUB_RMW_TAKE_LEAVE",
-        "prof_SUB_RCL_TAKE_LEAVE",
-        "prof_SUB_RCLCPP_TAKE_LEAVE",
-        "prof_SUB_RCLCPP_HANDLE"
-    ]
-
-NO_PROFILING_TIMESTAMPS = len(PROF_IDX_LABELS_MAPPING)
-
+# define the profiling categories. The values are pairwise start-end
+# profiling index names. Time span between multiple pairs are added up
+# within the category. Current setting matches the figure from the current paper diagram.
 PROF_CATEGORIES = {
     'Publisher ROS2 Common': ('prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0',
                               'prof_PUB_RMW_PUBLISH'),
@@ -42,6 +26,9 @@ PROF_CATEGORIES = {
     'Subscriber rmw': ('prof_SUB_RMW_TAKE_ENTER', 'prof_SUB_DDS_TAKE_ENTER',
                        'prof_SUB_DDS_TAKE_LEAVE', 'prof_SUB_RMW_TAKE_LEAVE')
 }
+
+# Quantiles to evaluate the latencies at
+QUANTILES = [0, 0.1, 1, 5, 10, 25, 40, 50, 60, 70, 80, 90, 95, 99, 99.9, 100]
 
 def getNodeIndexFromDumpedCsvFileName(filename: str) -> int:
     nodeIdx = int(filename.split('-')[0])
@@ -103,6 +90,7 @@ def extractValidMsgs(csvContents):
 
     result =  [c[c['tracking_number'].isin(validMsgs)] for c in csvContents]
     idx = result[0].index
+    # set the index equal in all contents, to match index to packet number in all frames
     for r in result:
         r.set_index(idx, inplace=True)
     def all_equal(iterator):
@@ -120,7 +108,6 @@ def extractValidMsgs(csvContents):
 def calcLatencies(content):
     def end2end():
         last = content[-1]
-        lastColumn = PROF_IDX_LABELS_MAPPING[-1]
         latencies = last['callback_timestamp'] - last['header_timestamp']
         return latencies
 
@@ -145,7 +132,6 @@ def calcLatencies(content):
     result['sumOverCategories'] = sumOverCategories
     return result
 
-QUANTILES = [0.1, 1, 5, 10, 25, 40, 50, 60, 70, 80, 90, 95, 99, 99.9]
 
 def calcStatistics(latencies):
     def columnStats(name, column):
@@ -171,7 +157,7 @@ def plotStats(stats):
         plt.xlabel('Quantile')
         plt.ylabel('Nanoseconds')
     plt.legend()
-    plt.title('Quantile distribution of Latency categories')
+    plt.title('Quantile distribution of Latency categories (aka CDF)')
     plt.grid(True)
     if SHOW:
         plt.show()
