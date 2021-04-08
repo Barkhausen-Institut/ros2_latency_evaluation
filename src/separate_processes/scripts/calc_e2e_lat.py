@@ -148,7 +148,7 @@ def calcStatistics(latencies):
         result.update(columnStats(c, latencies[c]))
     return result
 
-def plotStats(stats, plotStats: bool):
+def plotStats(stats, visStats: bool):
     plt.figure()
 
     for cat in list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories']:
@@ -160,11 +160,11 @@ def plotStats(stats, plotStats: bool):
     plt.title('Quantile distribution of Latency categories (aka CDF)')
     plt.grid(True)
 
-    if plotStats:
+    if visStats:
         plt.show()
 
 
-def processDirectory(parentDir: str, plotStats: bool):
+def processDirectory(parentDir: str, visStats: bool):
     if not os.path.exists(parentDir):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
     sortedNames = getSortedNamesInDir(parentDir)
@@ -176,7 +176,7 @@ def processDirectory(parentDir: str, plotStats: bool):
 
     stats = calcStatistics(latencies)
     print (stats)
-    plotStats(stats, plotStats)
+    plotStats(stats, visStats)
     with open(f"{parentDir}/stats.json", "w") as f:
         import json
         print(json.dumps(stats, indent=4), file=f)
@@ -185,11 +185,11 @@ def processDirectory(parentDir: str, plotStats: bool):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--directory', type=str, help='relative path to directory containing dumped csvs.')
-    parser.add_argument('--plot_stats', type=bool, nargs='?', help='Specify if plots are to be plotted.', default=False)
+    parser.add_argument('--vis_stats', type=bool, nargs='?', help='Specify if plots are to be plotted.', default=False)
     args = parser.parse_args()
 
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
-        processDirectory(resultsDir, args.plot_stats)
+        processDirectory(resultsDir, args.vis_stats)
 
         break
