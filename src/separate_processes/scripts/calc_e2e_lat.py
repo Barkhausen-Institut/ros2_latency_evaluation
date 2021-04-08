@@ -14,16 +14,16 @@ SHOW = True
 # profiling index names. Time span between multiple pairs are added up
 # within the category. Current setting matches the figure from the current paper diagram.
 PROF_CATEGORIES = {
-    'Publisher ROS2 Common': ('prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0',
+    'Publisher_ROS2_Common': ('prof_PUB_RCLCPP_INTERPROCESS_PUBLISH 0',
                               'prof_PUB_RMW_PUBLISH'),
-    'Publisher rmw': ('prof_PUB_RMW_PUBLISH',
+    'Publisher_rmw': ('prof_PUB_RMW_PUBLISH',
                       'prof_PUB_DDS_WRITE'),
     'DDS': ('prof_PUB_DDS_WRITE', 'prof_SUB_DDS_ONDATA',
             'prof_SUB_DDS_TAKE_ENTER', 'prof_SUB_DDS_TAKE_LEAVE'),
-    'Rclcpp Notification Delay': ('prof_SUB_DDS_ONDATA', 'prof_SUB_RCLCPP_TAKE_ENTER'),
-    'Subscriber ROS2 Common': ('prof_SUB_RCLCPP_TAKE_ENTER', 'prof_SUB_RMW_TAKE_ENTER',
+    'Rclcpp_Notification_Delay': ('prof_SUB_DDS_ONDATA', 'prof_SUB_RCLCPP_TAKE_ENTER'),
+    'Subscriber_ROS2_Common': ('prof_SUB_RCLCPP_TAKE_ENTER', 'prof_SUB_RMW_TAKE_ENTER',
                                'prof_SUB_RMW_TAKE_LEAVE', 'prof_SUB_RCLCPP_HANDLE'),
-    'Subscriber rmw': ('prof_SUB_RMW_TAKE_ENTER', 'prof_SUB_DDS_TAKE_ENTER',
+    'Subscriber_rmw': ('prof_SUB_RMW_TAKE_ENTER', 'prof_SUB_DDS_TAKE_ENTER',
                        'prof_SUB_DDS_TAKE_LEAVE', 'prof_SUB_RMW_TAKE_LEAVE')
 }
 
@@ -192,5 +192,3 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
-
-        break
