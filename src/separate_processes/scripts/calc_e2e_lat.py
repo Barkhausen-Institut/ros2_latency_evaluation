@@ -159,6 +159,7 @@ def plotStats(stats, plotStats: bool):
     plt.legend()
     plt.title('Quantile distribution of Latency categories (aka CDF)')
     plt.grid(True)
+
     if plotStats:
         plt.show()
 
@@ -187,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument('--plot_stats', type=bool, nargs='?', help='Specify if plots are to be plotted.', default=False)
     args = parser.parse_args()
 
-    for resultsDir in glob(os.path.join(args.directory, "*"))[1:]:
+    for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.plot_stats)
 
