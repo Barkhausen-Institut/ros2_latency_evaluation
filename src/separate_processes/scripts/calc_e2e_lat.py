@@ -45,6 +45,7 @@ def loadCsvs(files: List[str]):
     for fn in files:
         print(f"File {fn}")
         content = pd.read_csv(fn, dtype=np.int64)
+        content.iloc[:, 1:] /= 1000
         currentHeader = list(content.columns)
         if header is None:
             header = currentHeader
@@ -155,7 +156,7 @@ def plotStats(stats, visStats: bool):
         cdf = [stats[f"{cat}_q{q}"] for q in QUANTILES]
         plt.plot(QUANTILES, cdf, '-x', label=cat)
         plt.xlabel('Quantile')
-        plt.ylabel('Nanoseconds')
+        plt.ylabel('Microseconds')
     plt.legend()
     plt.title('Quantile distribution of Latency categories (aka CDF)')
     plt.grid(True)
