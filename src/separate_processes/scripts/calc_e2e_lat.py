@@ -183,8 +183,8 @@ def processDirectory(parentDir: str, plotStats: bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('directory', type=str, help='relative path to directory containing dumped csvs.')
-    parser.add_argument('plot_stats', type=bool, help='Specify if plots are to be plotted.', default=False)
+    parser.add_argument('--directory', type=str, help='relative path to directory containing dumped csvs.')
+    parser.add_argument('--plot_stats', type=bool, nargs='?', help='Specify if plots are to be plotted.', default=False)
     args = parser.parse_args()
 
     for resultsDir in glob(os.path.join(args.directory, "*"))[1:]:
