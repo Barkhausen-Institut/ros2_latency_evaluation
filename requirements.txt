@@ -8,3 +8,4 @@ Cython==0.29.14
 lxml==4.5.0
 cryptography==2.8
 netifaces==0.10.9
+pandas==1.2.3
