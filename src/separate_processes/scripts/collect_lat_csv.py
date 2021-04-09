@@ -11,7 +11,12 @@ def getRelevantDirectories(args) -> List[str]:
     nodes: List[int] = []
 
     for noNodes in range(args.nodes[0], args.nodes[1] + 1, args.nodes[2]):
-        globPattern = f"*_{noNodes}Nodes*{args.f}Hz*{args.msg_size}*{args.rmw}*{args.reliability}*"
+        freq = args.f
+
+        if freq == 100:
+            freq = "1e+02"
+
+        globPattern = f"*_{noNodes}Nodes*{freq}Hz*{args.msg_size}*{args.rmw}*{args.reliability}*"
         globbedDirectories = glob(os.path.join(args.directory, globPattern))
 
         # only update if some directories are actually found
@@ -35,6 +40,8 @@ def createResultsFilepath(args) -> str:
 def processDirectory(args) -> pd.DataFrame:
     if not os.path.exists(args.directory):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
+
+    print(f"Parsing directory: {args.directory}")
 
     nodes, dirPaths = getRelevantDirectories(args)
     with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
@@ -60,7 +67,6 @@ if __name__ == '__main__':
     parser.add_argument('--reliability', type=str, default="reliable", help="Reliability, best-effort or reliable")
     args = parser.parse_args()
 
-    print(f"Parsing directory: {args.directory}")
     statsDf = processDirectory(args)
     filePath = createResultsFilepath(args)
 
