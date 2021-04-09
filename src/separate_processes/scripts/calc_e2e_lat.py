@@ -131,6 +131,7 @@ def calcLatencies(content):
         result = result.join(category(catName, catColumns))
     sumOverCategories = sum(result[cat] for cat in PROF_CATEGORIES.keys())
     result['sumOverCategories'] = sumOverCategories
+    result['benchmarkOverhead'] = result['end2end'] - result['sumOverCategories']
     return result
 
 
@@ -143,7 +144,7 @@ def calcStatistics(latencies):
             result[f"{name}_q{q}"] = column.quantile(q/100.0)
         return result
 
-    columns = list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories']
+    columns = list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories', 'benchmarkOverhead']
     result = dict()
     for c in columns:
         result.update(columnStats(c, latencies[c]))
@@ -152,7 +153,7 @@ def calcStatistics(latencies):
 def plotStats(stats, visStats: bool):
     plt.figure()
 
-    for cat in list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories']:
+    for cat in list(PROF_CATEGORIES.keys()) + ['end2end', 'sumOverCategories', 'benchmarkOverhead']:
         cdf = [stats[f"{cat}_q{q}"] for q in QUANTILES]
         plt.plot(QUANTILES, cdf, '-x', label=cat)
         plt.xlabel('Quantile')
