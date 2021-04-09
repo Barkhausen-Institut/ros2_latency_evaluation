@@ -76,7 +76,6 @@ if __name__ == '__main__':
     parser.add_argument('--f', type=int, default=1, help="Publisher Frequency in Hz.")
     parser.add_argument('--msg-size', type=str, default="128b", help="Size of the message.")
     parser.add_argument('--reliability', type=str, default="reliable", help="Reliability, best-effort or reliable")
-    parser.add_argument('--stat-quantity', type=str, default="median", help="Statistical quanitity to choose.")
     args = parser.parse_args()
 
     print(f"Parsing directory: {args.directory}")
