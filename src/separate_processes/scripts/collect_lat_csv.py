@@ -1,8 +1,10 @@
 import argparse
 import os
 from glob import glob
-from typing import List
+from typing import List, Tuple
 import json
+
+import pandas as pd
 
 # define the profiling categories. The values are pairwise start-end
 # profiling index names. Time span between multiple pairs are added up
@@ -24,28 +26,43 @@ PROF_CATEGORIES = {
 
 def getRelevantDirectories(args) -> List[str]:
     dirPaths: List[str] = []
+    nodes: List[int] = []
+
     for noNodes in range(args.nodes[0], args.nodes[1] + 1, args.nodes[2]):
         globPattern = f"*_{noNodes}Nodes*{args.f}Hz*{args.msg_size}*{args.rmw}*{args.reliability}*"
-        dirPaths.extend(glob(os.path.join(args.directory, globPattern)))
+        globbedDirectories = glob(os.path.join(args.directory, globPattern))
+
+        # only update if some directories are actually found
+        if len(globbedDirectories) > 1:
+            raise ValueError("We foundmore than one directory...")
+
+        if len(globbedDirectories) == 1:
+            dirPaths.append(globbedDirectories[0])
+            nodes.append(noNodes)
 
     if len(dirPaths) == 0:
         raise FileNotFoundError("No directories found.")
     else:
         print(f"Processing following directories: {dirPaths}")
 
-    return dirPaths
+    return nodes, dirPaths
 
 def processDirectory(args) -> None:
-    resStats: Dict[str, List[float]] = {k: [] for k in PROF_CATEGORIES.keys()}
     if not os.path.exists(args.directory):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
 
-    dirPaths = getRelevantDirectories(args)
-    for dirPath in dirPaths:
+    nodes, dirPaths = getRelevantDirectories(args)
+    with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
+        stats = json.load(f)
+        statsDf = pd.DataFrame(index=nodes, columns=stats.keys(), dtype=float)
+
+    for noNodes, dirPath in zip(nodes, dirPaths):
         with open(os.path.join(dirPath, "stats.json"), 'r') as f:
             stats = json.load(f)
-            for profCategory in PROF_CATEGORIES.keys():
-                resStats[profCategory].append(stats[f"{profCategory}_{args.stat_quantity}"])
+            for k in stats.keys():
+                statsDf.loc[noNodes, k] = stats[k]
+
+    print(statsDf)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
