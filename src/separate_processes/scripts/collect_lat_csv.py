@@ -42,12 +42,15 @@ def getRelevantDirectories(args) -> List[str]:
 
     if len(dirPaths) == 0:
         raise FileNotFoundError("No directories found.")
-    else:
-        print(f"Processing following directories: {dirPaths}")
 
     return nodes, dirPaths
 
-def processDirectory(args) -> None:
+def createResultsFilepath(args) -> str:
+    filename = f"{args.rmw}_{args.f}Hz_{args.msg_size}_{args.reliability}.csv"
+    filePath = os.path.join(args.res_dir, filename)
+    return filePath
+
+def processDirectory(args) -> pd.DataFrame:
     if not os.path.exists(args.directory):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
 
@@ -61,8 +64,7 @@ def processDirectory(args) -> None:
             stats = json.load(f)
             for k in stats.keys():
                 statsDf.loc[noNodes, k] = stats[k]
-
-    print(statsDf)
+    return statsDf
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -78,4 +80,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(f"Parsing directory: {args.directory}")
-    processDirectory(args)
+    statsDf = processDirectory(args)
+    filePath = createResultsFilepath(args)
+
+    if not os.path.exists(args.res_dir):
+        os.makedirs(args.res_dir)
+
+    statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="Nodes")
+    print(f"Results saved to: {os.path.abspath(filePath)}")
