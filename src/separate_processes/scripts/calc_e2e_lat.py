@@ -81,6 +81,8 @@ def findValidMsgs(csvContents):
 
 def extractValidMsgs(csvContents):
     validMsgs, history = findValidMsgs(csvContents)
+    noInvalidMsgs = max(history) - min(history)
+
     if True:
         plt.figure()
         plt.plot(history, '-x')
@@ -104,7 +106,7 @@ def extractValidMsgs(csvContents):
     assert all_equal([list(r['tracking_number']) for r in result])
     assert all_equal([list(r.index) for r in result])
 
-    return result
+    return noInvalidMsgs, result
 
 def calcLatencies(content):
     def end2end():
@@ -171,12 +173,14 @@ def processDirectory(parentDir: str, visStats: bool):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
     sortedNames = getSortedNamesInDir(parentDir)
     csvContents = loadCsvs(sortedNames)
-    validCsvs = extractValidMsgs(csvContents)
+    noInvalidMsgs, validCsvs = extractValidMsgs(csvContents)
 
     latencies = calcLatencies(validCsvs)
     latencies.to_csv(f"{parentDir}/latencies.csv", index=False)
 
     stats = calcStatistics(latencies)
+    stats["invalid_msgs"] = noInvalidMsgs
+
     print (stats)
     plotStats(stats, visStats)
     with open(f"{parentDir}/stats.json", "w") as f:
@@ -193,3 +197,4 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
+        break
