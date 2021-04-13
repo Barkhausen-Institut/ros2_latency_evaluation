@@ -52,34 +52,29 @@ def createResultsFilepath(args) -> str:
     filePath = os.path.join(args.res_dir, filename)
     return filePath
 
+def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
+    with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
+        stats = json.load(f)
+        statsDf = pd.DataFrame(index=desiredArgument, columns=stats.keys(), dtype=float)
+    for freq, dirPath in zip(desiredArgument, dirPaths):
+        with open(os.path.join(dirPath, "stats.json"), 'r') as f:
+            stats = json.load(f)
+            for k in stats.keys():
+                statsDf.loc[freq, k] = stats[k]
+
+    return statsDf
+
 def processDirectory(args) -> pd.DataFrame:
     if not os.path.exists(args.directory):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
 
     print(f"Parsing directory: {args.directory}")
-
     dirPaths = getRelevantDirectories(args)
 
-    
     if len(args.f) > 1:
-        with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
-            stats = json.load(f)
-            statsDf = pd.DataFrame(index=args.f, columns=stats.keys(), dtype=float)
-        for freq, dirPath in zip(args.f, dirPaths):
-            with open(os.path.join(dirPath, "stats.json"), 'r') as f:
-                stats = json.load(f)
-                for k in stats.keys():
-                    statsDf.loc[freq, k] = stats[k]
+        return loadStats(args.f, dirPaths)
     else:
-        with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
-            stats = json.load(f)
-            statsDf = pd.DataFrame(index=args.nodes, columns=stats.keys(), dtype=float)
-        for noNodes, dirPath in zip(args.nodes, dirPaths):
-            with open(os.path.join(dirPath, "stats.json"), 'r') as f:
-                stats = json.load(f)
-                for k in stats.keys():
-                    statsDf.loc[noNodes, k] = stats[k]
-    return statsDf
+        return loadStats(args.nodes, dirPaths)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
