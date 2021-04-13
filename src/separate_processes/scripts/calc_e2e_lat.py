@@ -186,9 +186,9 @@ def processDirectory(parentDir: str, visStats: bool):
     latencies.to_csv(f"{parentDir}/latencies.csv", index=False)
 
     stats = calcStatistics(latencies)
-    stats["invalid_msgs"] = {"amount": 0, "indices": {}}
-    stats["invalid_msgs"]["amount"] = noInvalidMsgs
-    stats["invalid_msgs"]["indices"] = invalidMsgsIndices
+    stats["invalidMsgs"] = {"amount": 0, "indices": {}}
+    stats["invalidMsgs"]["amount"] = noInvalidMsgs
+    stats["invalidMsgs"]["indices"] = invalidMsgsIndices
 
     print (stats)
     plotStats(stats, visStats)
