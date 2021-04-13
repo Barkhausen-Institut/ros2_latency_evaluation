@@ -1,7 +1,7 @@
 import os
 import argparse
 from glob import glob
-from typing import List, Tuple
+from typing import List, Tuple, Any
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,6 +29,10 @@ PROF_CATEGORIES = {
 
 # Quantiles to evaluate the latencies at
 QUANTILES = [0, 0.1, 1, 5, 10, 25, 40, 50, 60, 70, 80, 90, 95, 99, 99.9, 100]
+
+def flattenList(nestedList: List[List[Any]]) -> List[Any]:
+    flattenedList = [el for el in l for l in nestedList]
+    return flattenedList
 
 def getNodeIndexFromDumpedCsvFileName(filename: str) -> int:
     nodeIdx = int(filename.split('-')[0])
@@ -66,6 +70,7 @@ def getSortedNamesInDir(parentDir):
 
 def findValidMsgs(csvContents):
     history = []
+    indices = {i: [] for i in range(len(csvContents))}
     validMsgs = None
     startMsgs = None
     for i, content in enumerate(csvContents):
@@ -74,13 +79,17 @@ def findValidMsgs(csvContents):
             startMsgs = currentMsgs
             validMsgs = currentMsgs
         else:
+            indices[i+2] = list(validMsgs ^ currentMsgs)
             validMsgs = validMsgs & currentMsgs
         print(f"Dropped in file {i}: {startMsgs - validMsgs}")
         history.append(len(validMsgs))
-    return validMsgs, history
+
+    return validMsgs, history, indices
 
 def extractValidMsgs(csvContents):
-    validMsgs, history = findValidMsgs(csvContents)
+    validMsgs, history, invalidMsgsIndices = findValidMsgs(csvContents)
+    noInvalidMsgs = max(history) - min(history)
+
     if True:
         plt.figure()
         plt.plot(history, '-x')
@@ -104,7 +113,7 @@ def extractValidMsgs(csvContents):
     assert all_equal([list(r['tracking_number']) for r in result])
     assert all_equal([list(r.index) for r in result])
 
-    return result
+    return noInvalidMsgs, invalidMsgsIndices, result
 
 def calcLatencies(content):
     def end2end():
@@ -171,12 +180,16 @@ def processDirectory(parentDir: str, visStats: bool):
         raise FileNotFoundError(f"Directory {parentDir} does not exist.")
     sortedNames = getSortedNamesInDir(parentDir)
     csvContents = loadCsvs(sortedNames)
-    validCsvs = extractValidMsgs(csvContents)
+    noInvalidMsgs, invalidMsgsIndices, validCsvs = extractValidMsgs(csvContents)
 
     latencies = calcLatencies(validCsvs)
     latencies.to_csv(f"{parentDir}/latencies.csv", index=False)
 
     stats = calcStatistics(latencies)
+    stats["invalidMsgs"] = {"amount": 0, "indices": {}}
+    stats["invalidMsgs"]["amount"] = noInvalidMsgs
+    stats["invalidMsgs"]["indices"] = invalidMsgsIndices
+
     print (stats)
     plotStats(stats, visStats)
     with open(f"{parentDir}/stats.json", "w") as f:
@@ -193,3 +206,4 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
+        break
