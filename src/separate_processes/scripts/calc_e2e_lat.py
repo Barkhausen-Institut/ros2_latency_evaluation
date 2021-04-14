@@ -70,7 +70,7 @@ def getSortedNamesInDir(parentDir):
 
 def findValidMsgs(csvContents):
     history = []
-    indices = {i: [] for i in range(len(csvContents))}
+    indices = {i+1: [] for i in range(len(csvContents))}
     validMsgs = None
     startMsgs = None
     for i, content in enumerate(csvContents):
@@ -79,7 +79,7 @@ def findValidMsgs(csvContents):
             startMsgs = currentMsgs
             validMsgs = currentMsgs
         else:
-            indices[i+2] = list(validMsgs ^ currentMsgs)
+            indices[i+1] = list(validMsgs ^ currentMsgs)
             validMsgs = validMsgs & currentMsgs
         print(f"Dropped in file {i}: {startMsgs - validMsgs}")
         history.append(len(validMsgs))
