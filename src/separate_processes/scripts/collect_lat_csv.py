@@ -61,7 +61,6 @@ def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
             stats = json.load(f)
             for k in stats.keys():
                 if k == "invalidMsgs":
-                    breakpoint()
                     statsDf.insert(len(statsDf.columns), "amountInvalidMsgs", stats[k]["amount"])
                     statsDf.insert(len(statsDf.columns), "invalidMsgs", pd.Series(stats[k]["indices"]))
                 else:
