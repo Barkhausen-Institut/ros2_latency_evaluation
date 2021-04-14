@@ -70,10 +70,10 @@ def getSortedNamesInDir(parentDir):
 
 def findValidMsgs(csvContents):
     history = []
-    indices = {i+1: [] for i in range(len(csvContents))}
+    indices = {i+1: [] for i in range(len(csvContents)+1)}
     validMsgs = None
     startMsgs = None
-    for i, content in enumerate(csvContents):
+    for i, content in zip(indices, csvContents):
         currentMsgs = set(content['tracking_number'])
         if validMsgs is None:
             startMsgs = currentMsgs
@@ -205,3 +205,4 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
+        break
