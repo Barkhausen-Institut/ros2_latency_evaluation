@@ -70,16 +70,16 @@ def getSortedNamesInDir(parentDir):
 
 def findValidMsgs(csvContents):
     history = []
-    indices = {i: [] for i in range(len(csvContents))}
+    indices = {i+1: [] for i in range(len(csvContents)+1)}
     validMsgs = None
     startMsgs = None
-    for i, content in enumerate(csvContents):
+    for i, content in zip(indices, csvContents):
         currentMsgs = set(content['tracking_number'])
         if validMsgs is None:
             startMsgs = currentMsgs
             validMsgs = currentMsgs
         else:
-            indices[i+2] = list(validMsgs ^ currentMsgs)
+            indices[i+1] = list(validMsgs ^ currentMsgs)
             validMsgs = validMsgs & currentMsgs
         print(f"Dropped in file {i}: {startMsgs - validMsgs}")
         history.append(len(validMsgs))
@@ -186,9 +186,8 @@ def processDirectory(parentDir: str, visStats: bool):
     latencies.to_csv(f"{parentDir}/latencies.csv", index=False)
 
     stats = calcStatistics(latencies)
-    stats["invalidMsgs"] = {"amount": 0, "indices": {}}
-    stats["invalidMsgs"]["amount"] = noInvalidMsgs
-    stats["invalidMsgs"]["indices"] = invalidMsgsIndices
+    stats["noTotalInvalidMsgs"] = noInvalidMsgs
+    stats["invalidMsgs"] = invalidMsgsIndices
 
     print (stats)
     plotStats(stats, visStats)
@@ -206,3 +205,4 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
+        break
