@@ -1,7 +1,7 @@
 import argparse
 import os
 from glob import glob
-from typing import List, Tuple
+from typing import List, Tuple, Any
 import json
 
 import pandas as pd
@@ -52,15 +52,29 @@ def createResultsFilepath(args) -> str:
     filePath = os.path.join(args.res_dir, filename)
     return filePath
 
+def replaceEmptyListsByZeroElements(l: List[List[Any]]) -> List[Any]:
+    res = []
+    for subList in l:
+        if len(subList) == 0:
+            res.extend([0])
+        else:
+            res.extend(subList)
+    return res
+
 def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
     with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
         stats = json.load(f)
-        statsDf = pd.DataFrame(index=desiredArgument, columns=stats.keys(), dtype=float)
-    for freq, dirPath in zip(desiredArgument, dirPaths):
+        statsDf = pd.DataFrame(index=desiredArgument, columns=stats.keys())
+    for arg, dirPath in zip(desiredArgument, dirPaths):
         with open(os.path.join(dirPath, "stats.json"), 'r') as f:
             stats = json.load(f)
             for k in stats.keys():
-                statsDf.loc[freq, k] = stats[k]
+                if k == "invalidMsgs":
+                    indices = [v for _, v in stats[k].items()]
+                    statsDf.loc[arg, k] = replaceEmptyListsByZeroElements(indices)
+                else:
+                    statsDf.loc[arg, k] = stats[k]
+
 
     return statsDf
 
