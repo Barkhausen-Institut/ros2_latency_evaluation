@@ -19,7 +19,7 @@ def calculateCdf(lat: np.array) -> Tuple[np.array, np.array]:
 
 def calculateAggPkgErrors(pkgs: np.array) -> np.array:
     errors = np.diff(pkgs) - 1
-    aggErrors = np.cumsum(errors)
+    aggErrors = np.cumsum(errors) + pkgs[0]
     aggErrors = np.append(np.array([0]), aggErrors)
     return aggErrors
 
