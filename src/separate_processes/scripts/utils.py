@@ -2,7 +2,7 @@ from typing import List
 from glob import glob
 import os
 
-def createResultsFilepath(args) -> str:
+def createResultsFilepath(args, fileExtension: str) -> str:
     filename = f"{args.rmw}_"
     if len(args.f) > 1:
         filename += f"{args.nodes[0]}Nodes_"
@@ -11,7 +11,7 @@ def createResultsFilepath(args) -> str:
     else:
         filename += f"{args.nodes[0]}-{args.nodes[-1]}Nodes_{args.f[0]}"
 
-    filename += f"Hz_{args.msg_size}_{args.reliability}.csv"
+    filename += f"Hz_{args.msg_size}_{args.reliability}.{fileExtension}"
     filePath = os.path.join(args.res_dir, filename)
     return filePath
 
