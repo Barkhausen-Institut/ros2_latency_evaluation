@@ -8,7 +8,7 @@ import os
 import argparse
 import json
 
-from utils import getRelevantDirectories
+from utils import getRelevantDirectories, createResultsFilepath
 
 def calculateCdf(lat: np.array) -> Tuple[np.array, np.array]:
     binCount, binEdges = np.histogram(lat, bins=100)
@@ -23,11 +23,12 @@ def calculateAggPkgErrors(pkgs: np.array) -> np.array:
     aggErrors = np.append(np.array([0]), aggErrors)
     return aggErrors
 
-plt.ion()
 
 def processDirectory(args):
+    plt.ion()
     dirs: List[str] = getRelevantDirectories(args)
 
+    filePath, filenameAppendix = createResultsFilepath(args, "png")
     for f in getRelevantDirectories(args):
         latenciesFile = os.path.join(f, "latencies.csv")
         print(f"Processing file: {latenciesFile}")
@@ -46,7 +47,7 @@ def processDirectory(args):
             plt.ylabel('Aggregated Msg Drop')
             plt.plot(np.arange(len(aggregatedErrors)), aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
 
-            filename = "aggregatedMsgDrop.png"
+            filename = "aggregatedMsgDrop_"
 
         if args.cdf:
             endToEndLatencies = df["end2end"].values
@@ -57,10 +58,15 @@ def processDirectory(args):
             plt.ylabel('Probability')
             plt.yticks([0.1*i for i in range(11)])
             plt.grid('minor')
-            filename = "e2eLatCdf.png"
+
+            filename = "e2eLatCdf_"
 
         plt.legend()
+    filename += filenameAppendix
 
+    if not os.path.exists(args.res_dir):
+        os.makedirs(args.res_dir)
+    plt.savefig(os.path.join(args.res_dir, filename))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
