@@ -35,13 +35,16 @@ def processDirectory(args):
         df = pd.read_csv(latenciesFile)
         stats = json.load(open(os.path.join(f, 'stats.json'), 'r'))
         lenInvalidMsgs = len(stats['invalidMsgs'].keys())
+
+        title = f'RMW: {args.rmw}, Freq: {args.f}, Msgsize: {args.msg_size}, Rel.: {args.reliability}'
+
+        plt.title(title)
         if args.pkg_errors:
             trackingNumbers = df["tracking_number"].values
             aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
             plt.xlabel('Tracking Number')
             plt.ylabel('Aggregated Msg Drop')
             plt.plot(np.arange(len(aggregatedErrors)), aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
-            plt.legend()
 
             filename = "aggregatedMsgDrop.png"
 
@@ -54,10 +57,10 @@ def processDirectory(args):
             plt.ylabel('Probability')
             plt.yticks([0.1*i for i in range(11)])
             plt.grid('minor')
-            plt.draw()
-            plt.legend()
-
             filename = "e2eLatCdf.png"
+
+        plt.legend()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
