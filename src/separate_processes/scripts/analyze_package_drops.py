@@ -43,7 +43,7 @@ def processDirectory(args):
         if args.pkg_errors:
             trackingNumbers = df["tracking_number"].values
             aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
-            plt.xlabel('Tracking Number')
+            plt.xlabel('Tracking Number [#]')
             plt.ylabel('Aggregated Msg Drop')
             plt.plot(np.arange(len(aggregatedErrors)), aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
 
@@ -54,7 +54,7 @@ def processDirectory(args):
             binEdges, cdf = calculateCdf(endToEndLatencies)
 
             plt.plot(binEdges[1:], cdf, label=f'len(noInvalidMsgs)={lenInvalidMsgs}')
-            plt.xlabel('Latencies')
+            plt.xlabel('Latencies [us]')
             plt.ylabel('Probability')
             plt.yticks([0.1*i for i in range(11)])
             plt.grid('minor')
