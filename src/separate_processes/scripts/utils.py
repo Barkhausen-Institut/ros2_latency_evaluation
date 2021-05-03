@@ -1,5 +1,6 @@
 from typing import List
 from glob import glob
+import os
 
 
 def getRelevantDirectories(args) -> List[str]:
