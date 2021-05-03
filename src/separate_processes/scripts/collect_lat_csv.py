@@ -6,20 +6,8 @@ import json
 
 import pandas as pd
 
-from utils import getRelevantDirectories
+from utils import getRelevantDirectories, createResultsFilepath
 
-def createResultsFilepath(args) -> str:
-    filename = f"{args.rmw}_"
-    if len(args.f) > 1:
-        filename += f"{args.nodes[0]}Nodes_"
-        for f in args.f:
-            filename += f"{f}-"
-    else:
-        filename += f"{args.nodes[0]}-{args.nodes[-1]}Nodes_{args.f[0]}"
-
-    filename += f"Hz_{args.msg_size}_{args.reliability}.csv"
-    filePath = os.path.join(args.res_dir, filename)
-    return filePath
 
 def replaceEmptyListsByZeroElements(l: List[List[Any]]) -> List[Any]:
     res = []
