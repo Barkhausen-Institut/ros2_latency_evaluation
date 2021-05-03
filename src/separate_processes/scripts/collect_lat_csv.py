@@ -61,7 +61,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     statsDf = processDirectory(args)
-    filePath = createResultsFilepath(args, "csv")
+    filePath, _ = createResultsFilepath(args, "csv")
 
     if not os.path.exists(args.res_dir):
         os.makedirs(args.res_dir)

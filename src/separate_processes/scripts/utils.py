@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Tuple
 from glob import glob
 import os
 
-def createResultsFilepath(args, fileExtension: str) -> str:
+def createResultsFilepath(args, fileExtension: str) -> Tuple[str, str]:
     filename = f"{args.rmw}_"
     if len(args.f) > 1:
         filename += f"{args.nodes[0]}Nodes_"
@@ -13,7 +13,7 @@ def createResultsFilepath(args, fileExtension: str) -> str:
 
     filename += f"Hz_{args.msg_size}_{args.reliability}.{fileExtension}"
     filePath = os.path.join(args.res_dir, filename)
-    return filePath
+    return filePath, filename
 
 def getRelevantDirectories(args) -> List[str]:
     """Gets relevant directories provided the parameters in args.
