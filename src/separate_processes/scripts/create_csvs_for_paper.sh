@@ -1,14 +1,21 @@
 #!/bin/bash
+PKG_DROPS_ANALYSIS=1
 
 DATA_DIRECTORY=$1
 RES_DIRECTORY=$2
 
 DDS_BACKENDS='cyclone'
-F_PUBLISHER_SET='1 10 40 60 80 100'
+F_PUBLISHER_SET='100'
 MSG_SIZE_SET='128b 1kb 10kb 100kb 500kb'
 QOS_RELIABILITY_SET='best-effort'
 
-BASE_PYTHON_COMMAND='python collect_lat_csv.py'
+if [ "1" -eq $PKG_DROPS_ANALYSIS ]; then
+    BASE_PYTHON_COMMAND='python analyze_package_drops.py'
+    ADDITIONAL_ARGS='--pkg-errors True --cdf True'
+else
+    BASE_PYTHON_COMMAND='python collect_lat_csv.py'
+    ADDITIONAL_ARGS=''
+fi
 
 for DDS_BACKEND in $DDS_BACKENDS
 do
@@ -23,7 +30,8 @@ do
                                               --rmw $DDS_BACKEND \
                                               --reliability $QOS_RELIABILITY \
                                               --msg-size $MSG_SIZE \
-                                              --f $F_PUBLISHER"
+                                              --f $F_PUBLISHER \
+                                              $ADDITIONAL_ARGS"
                 /bin/bash -c "$command"
             done
         done
