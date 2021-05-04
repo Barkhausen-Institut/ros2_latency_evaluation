@@ -24,7 +24,7 @@ def calculateAggPkgErrors(pkgs: np.array) -> np.array:
     return aggErrors
 
 
-def processDirectory(args):
+def processDirectory(args, evalType: str):
     plt.ion()
     dirs: List[str] = getRelevantDirectories(args)
 
@@ -40,7 +40,7 @@ def processDirectory(args):
         title = f'RMW: {args.rmw}, Freq: {args.f}, Msgsize: {args.msg_size}, Rel.: {args.reliability}'
 
         plt.title(title)
-        if args.pkg_errors:
+        if evalType == "pkg_errors":
             trackingNumbers = df["tracking_number"].values
             aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
             plt.xlabel('Tracking Number [#]')
@@ -49,7 +49,7 @@ def processDirectory(args):
 
             filename = "aggregatedMsgDrop_"
 
-        if args.cdf:
+        if evalType == "cdf":
             endToEndLatencies = df["end2end"].values
             binEdges, cdf = calculateCdf(endToEndLatencies)
 
@@ -67,6 +67,7 @@ def processDirectory(args):
     if not os.path.exists(args.res_dir):
         os.makedirs(args.res_dir)
     plt.savefig(os.path.join(args.res_dir, filename))
+    plt.clf()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -83,7 +84,10 @@ if __name__ == '__main__':
     parser.add_argument('--cdf', type=bool, default=False)
     args = parser.parse_args()
 
-    processDirectory(args)
+    if args.cdf:
+        processDirectory(args, "cdf")
+    if args.pkg_errors:
+        processDirectory(args, "pkg_errors")
 
 
 
