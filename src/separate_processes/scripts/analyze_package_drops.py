@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--directory', type=str, default=".", help='relative path to parent directory containing dumped csvs.')
     parser.add_argument('--res-dir', type=str, default="results_paper", help="Directory to save post-processed data to.")
-    parser.add_argument('--nodes', nargs="+", default=[n for n in range(3, 24, 2)], type=int,
+    parser.add_argument('--nodes', nargs="+", default=[n for n in range(3, 26, 2)], type=int,
                                    help="""Number of nodes to process. Pass it as follows:
                                             <start_nodes> <end_nodes> <step_size>.""")
     parser.add_argument('--rmw', type=str, default="fastrtps", help="Choose RMW. Allowed values: cyclone, fastrtps, connext")
