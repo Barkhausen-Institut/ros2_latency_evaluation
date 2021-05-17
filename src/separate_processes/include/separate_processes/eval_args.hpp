@@ -2,6 +2,7 @@
 
 #include "cxxopts/include/cxxopts.hpp"
 #include <iostream>
+#include <cstdlib>
 
 #include "json.hpp"
 
@@ -55,6 +56,8 @@ public:
         std::cout << "QOS profile: " << qos << std::endl;
         std::cout << "Files will be saved to: ./" << resultsDirectoryPath << std::endl;
         std::cout << "Into file " << resultsFilename << std::endl;
+	std::cout << "RMW_CONNEXT_USE_DEFAULT_PUBLISH_MODE:" << std::getenv("
+RMW_CONNEXT_USE_DEFAULT_PUBLISH_MODE") << std::endl;
     }
 
     void dumpJsonIntoResultDirectory() {

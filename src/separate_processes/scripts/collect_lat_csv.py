@@ -8,7 +8,6 @@ import pandas as pd
 
 from utils import getRelevantDirectories, createResultsFilepath
 
-
 def replaceEmptyListsByZeroElements(l: List[List[Any]]) -> List[Any]:
     res = []
     for subList in l:
@@ -31,7 +30,6 @@ def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
                     statsDf.loc[arg, k] = replaceEmptyListsByZeroElements(indices)
                 else:
                     statsDf.loc[arg, k] = stats[k]
-
 
     return statsDf
 

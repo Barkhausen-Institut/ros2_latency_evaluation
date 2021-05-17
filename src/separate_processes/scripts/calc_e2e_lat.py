@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # set to false to suppress showing result diagrams
-SHOW = True
+SHOW = False
 
 # define the profiling categories. The values are pairwise start-end
 # profiling index names. Time span between multiple pairs are added up
@@ -47,15 +47,16 @@ def loadCsvs(files: List[str]):
     header = None
     contents = []
     for fn in files:
-        print(f"File {fn}")
-        content = pd.read_csv(fn, dtype=np.int64)
-        content.iloc[:, 1:] /= 1000
-        currentHeader = list(content.columns)
-        if header is None:
-            header = currentHeader
-        else:
-            assert header == currentHeader
-        contents.append(content)
+        if os.path.exists(fn):
+            #print(f"File{fn}")
+            content = pd.read_csv(fn, dtype=np.int64)
+            content.iloc[:, 1:] /= 1000
+            currentHeader = list(content.columns)
+            if header is None:
+                header = currentHeader
+            else:
+                assert header == currentHeader
+            contents.append(content)
     return contents
 
 def getSortedNamesInDir(parentDir):
@@ -63,7 +64,8 @@ def getSortedNamesInDir(parentDir):
     noNodes = getNoNodesFromDumpedCsvFileName(os.path.basename(dumpedCsvsPerRun[0]))
     sortedNames = [f"{parentDir}/{i}-{noNodes}.csv" for i in range(2, noNodes+1)]
     for f in sortedNames:
-        assert os.path.isfile(f), f"{f} does not exist"
+        if not os.path.isfile(f):
+            print(f"{f} does not exist")
     return sortedNames
 
 
@@ -81,7 +83,7 @@ def findValidMsgs(csvContents):
         else:
             indices[i+1] = list(validMsgs ^ currentMsgs)
             validMsgs = validMsgs & currentMsgs
-        print(f"Dropped in file {i}: {startMsgs - validMsgs}")
+        #print(f"Dropped in file {i}: {startMsgs - validMsgs}")
         history.append(len(validMsgs))
 
     return validMsgs, history, indices
@@ -189,7 +191,7 @@ def processDirectory(parentDir: str, visStats: bool):
     stats["noTotalInvalidMsgs"] = noInvalidMsgs
     stats["invalidMsgs"] = invalidMsgsIndices
 
-    print (stats)
+    #print (stats)
     plotStats(stats, visStats)
     with open(f"{parentDir}/stats.json", "w") as f:
         import json
@@ -205,4 +207,3 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
-        break
