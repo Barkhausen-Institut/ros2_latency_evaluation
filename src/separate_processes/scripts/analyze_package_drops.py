@@ -24,7 +24,7 @@ def calculateAggPkgErrors(pkgs: np.array) -> np.array:
     return aggErrors
 
 
-def processDirectory(args):
+def processDirectory(args, evalType: str):
     plt.ion()
     dirs: List[str] = getRelevantDirectories(args)
 
@@ -40,7 +40,7 @@ def processDirectory(args):
         title = f'RMW: {args.rmw}, Freq: {args.f}, Msgsize: {args.msg_size}, Rel.: {args.reliability}'
 
         plt.title(title)
-        if args.pkg_errors:
+        if evalType == "pkg_errors":
             trackingNumbers = df["tracking_number"].values
             aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
             plt.xlabel('Tracking Number [#]')
@@ -49,7 +49,7 @@ def processDirectory(args):
 
             filename = "aggregatedMsgDrop_"
 
-        if args.cdf:
+        if evalType == "cdf":
             endToEndLatencies = df["end2end"].values
             binEdges, cdf = calculateCdf(endToEndLatencies)
 
@@ -67,12 +67,13 @@ def processDirectory(args):
     if not os.path.exists(args.res_dir):
         os.makedirs(args.res_dir)
     plt.savefig(os.path.join(args.res_dir, filename))
+    plt.clf()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--directory', type=str, default=".", help='relative path to parent directory containing dumped csvs.')
     parser.add_argument('--res-dir', type=str, default="results_paper", help="Directory to save post-processed data to.")
-    parser.add_argument('--nodes', nargs="+", default=[n for n in range(3, 24, 2)], type=int,
+    parser.add_argument('--nodes', nargs="+", default=[n for n in range(3, 26, 2)], type=int,
                                    help="""Number of nodes to process. Pass it as follows:
                                             <start_nodes> <end_nodes> <step_size>.""")
     parser.add_argument('--rmw', type=str, default="fastrtps", help="Choose RMW. Allowed values: cyclone, fastrtps, connext")
@@ -83,7 +84,10 @@ if __name__ == '__main__':
     parser.add_argument('--cdf', type=bool, default=False)
     args = parser.parse_args()
 
-    processDirectory(args)
+    if args.cdf:
+        processDirectory(args, "cdf")
+    if args.pkg_errors:
+        processDirectory(args, "pkg_errors")
 
 
 
