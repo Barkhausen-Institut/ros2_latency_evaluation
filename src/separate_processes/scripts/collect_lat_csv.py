@@ -8,7 +8,6 @@ import pandas as pd
 
 from utils import getRelevantDirectories, createResultsFilepath
 
-
 def replaceEmptyListsByZeroElements(l: List[List[Any]]) -> List[Any]:
     res = []
     for subList in l:
