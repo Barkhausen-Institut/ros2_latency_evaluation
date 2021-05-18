@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List
 import csv
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -7,6 +7,7 @@ from glob import glob
 import os
 import argparse
 import json
+
 
 from utils import getRelevantDirectories, createResultsFilepath
 
@@ -16,6 +17,7 @@ def calculateCdf(lat: np.array) -> Tuple[np.array, np.array]:
     cdf = np.cumsum(pdf)
 
     return binEdges, cdf
+
 
 def calculateAggPkgErrors(pkgs: np.array) -> np.array:
     errors = np.diff(pkgs) - 1
@@ -27,46 +29,52 @@ def calculateAggPkgErrors(pkgs: np.array) -> np.array:
 def processDirectory(args, evalType: str):
     plt.ion()
     dirs: List[str] = getRelevantDirectories(args)
+    statsLatFound = False
 
     filePath, filenameAppendix = createResultsFilepath(args, "png")
-    for f in getRelevantDirectories(args):
-        latenciesFile = os.path.join(f, "latencies.csv")
-        print(f"Processing file: {latenciesFile}")
+    for f in dirs:
+        if not os.path.exists(os.path.join(f, 'stats.json')) or not os.path.exists(os.path.join(f,'latencies.csv')):
+            print(f"{f} does not contain a stats.json or latencies.csv")
+        else:
+            statsLatFound = True
+            latenciesFile = os.path.join(f, "latencies.csv")
+            print(f"Processing file: {latenciesFile}")
 
-        df = pd.read_csv(latenciesFile)
-        stats = json.load(open(os.path.join(f, 'stats.json'), 'r'))
-        lenInvalidMsgs = len(stats['invalidMsgs'].keys())
+            df = pd.read_csv(latenciesFile)
+            stats = json.load(open(os.path.join(f, 'stats.json'), 'r'))
+            lenInvalidMsgs = len(stats['invalidMsgs'].keys())
 
-        title = f'RMW: {args.rmw}, Freq: {args.f}, Msgsize: {args.msg_size}, Rel.: {args.reliability}'
+            title = f'RMW: {args.rmw}, Freq: {args.f}, Msgsize: {args.msg_size}, Rel.: {args.reliability}'
 
-        plt.title(title)
-        if evalType == "pkg_errors":
-            trackingNumbers = df["tracking_number"].values
-            aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
-            plt.xlabel('Tracking Number [#]')
-            plt.ylabel('Aggregated Msg Drop')
-            plt.plot(np.arange(len(aggregatedErrors)), aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
+            plt.title(title)
+            if evalType == "pkg_errors":
+                trackingNumbers = df["tracking_number"].values
+                aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
+                plt.xlabel('Tracking Number [#]')
+                plt.ylabel('Aggregated Msg Drop')
+                plt.plot(np.arange(len(aggregatedErrors)), aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
 
-            filename = "aggregatedMsgDrop_"
+                filename = "aggregatedMsgDrop_"
 
-        if evalType == "cdf":
-            endToEndLatencies = df["end2end"].values
-            binEdges, cdf = calculateCdf(endToEndLatencies)
+            if evalType == "cdf":
+                endToEndLatencies = df["end2end"].values
+                binEdges, cdf = calculateCdf(endToEndLatencies)
 
-            plt.plot(binEdges[1:], cdf, label=f'len(noInvalidMsgs)={lenInvalidMsgs}')
-            plt.xlabel('Latencies [us]')
-            plt.ylabel('Probability')
-            plt.yticks([0.1*i for i in range(11)])
-            plt.grid('minor')
+                plt.plot(binEdges[1:], cdf, label=f'len(noInvalidMsgs)={lenInvalidMsgs}')
+                plt.xlabel('Latencies [us]')
+                plt.ylabel('Probability')
+                plt.yticks([0.1*i for i in range(11)])
+                plt.grid('minor')
 
-            filename = "e2eLatCdf_"
+                filename = "e2eLatCdf_"
 
-        plt.legend()
-    filename += filenameAppendix
+            plt.legend()
+            filename += filenameAppendix
 
     if not os.path.exists(args.res_dir):
         os.makedirs(args.res_dir)
-    plt.savefig(os.path.join(args.res_dir, filename))
+    if statsLatFound:
+        plt.savefig(os.path.join(args.res_dir, filename))
     plt.clf()
 
 if __name__ == '__main__':

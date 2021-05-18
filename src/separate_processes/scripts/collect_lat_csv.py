@@ -18,26 +18,30 @@ def replaceEmptyListsByZeroElements(l: List[List[Any]]) -> List[Any]:
             res.extend(subList)
     return res
 
-def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
-    with open(os.path.join(dirPaths[0], "stats.json"), 'r') as f:
-        stats = json.load(f)
-        statsDf = pd.DataFrame(index=desiredArgument, columns=stats.keys())
-    for arg, dirPath in zip(desiredArgument, dirPaths):
-        with open(os.path.join(dirPath, "stats.json"), 'r') as f:
-            stats = json.load(f)
-            for k in stats.keys():
-                if k == "invalidMsgs":
-                    indices = [v for _, v in stats[k].items()]
-                    statsDf.loc[arg, k] = replaceEmptyListsByZeroElements(indices)
-                else:
-                    statsDf.loc[arg, k] = stats[k]
 
+def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
+    filepath = os.path.join(dirPaths[0], "stats.json")
+    statsDf = None
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            stats = json.load(f)
+            statsDf = pd.DataFrame(index=desiredArgument, columns=stats.keys())
+        for arg, dirPath in zip(desiredArgument, dirPaths):
+            with open(os.path.join(dirPath, "stats.json"), 'r') as f:
+                stats = json.load(f)
+                for k in stats.keys():
+                    if k == "invalidMsgs":
+                        indices = [v for _, v in stats[k].items()]
+                        statsDf.loc[arg, k] = replaceEmptyListsByZeroElements(indices)
+                    else:
+                        statsDf.loc[arg, k] = stats[k]
 
     return statsDf
 
+
 def processDirectory(args) -> pd.DataFrame:
     if not os.path.exists(args.directory):
-        raise FileNotFoundError(f"Directory {parentDir} does not exist.")
+        raise FileNotFoundError(f"Directory {args.directory} does not exist.")
 
     print(f"Parsing directory: {args.directory}")
     dirPaths = getRelevantDirectories(args)
@@ -46,6 +50,7 @@ def processDirectory(args) -> pd.DataFrame:
         return loadStats(args.f, dirPaths)
     else:
         return loadStats(args.nodes, dirPaths)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -66,9 +71,11 @@ if __name__ == '__main__':
     if not os.path.exists(args.res_dir):
         os.makedirs(args.res_dir)
 
-    if len(args.f) > 1:
-        statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="F[Hz]")
+    if statsDf is not None:
+        if len(args.f) > 1:
+            statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="F[Hz]")
+        else:
+            statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="Nodes")
+        print(f"Results saved to: {os.path.abspath(filePath)}")
     else:
-        statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="Nodes")
-
-    print(f"Results saved to: {os.path.abspath(filePath)}")
+        print(f"Directory {os.path.abspath(filePath)} does not contain a stats.json file")

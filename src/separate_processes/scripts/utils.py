@@ -27,7 +27,6 @@ def getRelevantDirectories(args) -> List[str]:
     """
     dirPaths: List[str] = []
     globPatterns: List[str] = []
-
     if len(args.f) > 1:
         for freq in args.f:
             if freq == 100:

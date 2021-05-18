@@ -205,4 +205,4 @@ if __name__ == '__main__':
     for resultsDir in glob(os.path.join(args.directory, "*")):
         print(f"Parsing directory: {resultsDir}")
         processDirectory(resultsDir, args.vis_stats)
-        break
+
