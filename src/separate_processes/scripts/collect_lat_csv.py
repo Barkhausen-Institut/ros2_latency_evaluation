@@ -41,7 +41,6 @@ def loadStats(desiredArgument, dirPaths: List[str]) -> pd.DataFrame:
 def processDirectory(args) -> pd.DataFrame:
     if not os.path.exists(args.directory):
         raise FileNotFoundError(f"Directory {args.directory} does not exist.")
-
     print(f"Parsing directory: {args.directory}")
     dirPaths = getRelevantDirectories(args)
 
@@ -72,7 +71,7 @@ if __name__ == '__main__':
 
     if statsDf is not None:
         if len(args.f) > 1:
-            statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="F[Hz]")
+            statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="Frequency")
         else:
             statsDf.to_csv(path_or_buf=filePath, sep=',', na_rep="nan", index_label="Nodes")
         print(f"Results saved to: {os.path.abspath(filePath)}")
