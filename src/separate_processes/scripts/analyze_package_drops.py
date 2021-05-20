@@ -11,9 +11,15 @@ import json
 
 from utils import getRelevantDirectories, createResultsFilepath
 
-def calculateCdf(lat: np.array) -> Tuple[np.array, np.array]:
+def calculatePdf(lat: np.array) -> Tuple[np.array, np.array]:
     binCount, binEdges = np.histogram(lat, bins=100)
     pdf = binCount / sum(binCount)
+
+    return binEdges, pdf
+
+
+def calculateCdf(lat: np.array) -> Tuple[np.array, np.array]:
+    binEdges, pdf = calculatePdf(lat)
     cdf = np.cumsum(pdf)
 
     return binEdges, cdf
@@ -68,6 +74,17 @@ def processDirectory(args, evalType: str):
 
                 filename = "e2eLatCdf_"
 
+            if evalType == "pdf":
+                endToEndLatencies = df["end2end"].values
+                binEdges, pdf = calculatePdf(endToEndLatencies)
+
+                plt.plot(binEdges[1:], pdf, label=f'len(noInvalidMsgs)={lenInvalidMsgs}')
+                plt.xlabel('Latencies [us]')
+                plt.ylabel('PDF')
+                plt.grid('minor')
+
+                filename = "e2eLatPdf_"
+
             plt.legend()
             filename += filenameAppendix
 
@@ -76,6 +93,7 @@ def processDirectory(args, evalType: str):
     if statsLatFound:
         plt.savefig(os.path.join(args.res_dir, filename))
     plt.clf()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -90,12 +108,13 @@ if __name__ == '__main__':
     parser.add_argument('--reliability', type=str, default="reliable", help="Reliability, best-effort or reliable")
     parser.add_argument('--pkg-errors', type=bool, default=False)
     parser.add_argument('--cdf', type=bool, default=False)
+    parser.add_argument('--pdf', type=bool, default=False)
     args = parser.parse_args()
 
     if args.cdf:
         processDirectory(args, "cdf")
     if args.pkg_errors:
         processDirectory(args, "pkg_errors")
-
-
+    if args.pdf:
+        processDirectory(args, "pdf")
 
