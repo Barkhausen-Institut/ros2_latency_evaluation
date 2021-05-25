@@ -1,9 +1,14 @@
 # NodeChainSeparateProcesses
 
-https://redmine.adbi.barkhauseninstitut.org/issues/1405
+This is the official repository for benchmarking a ros2 node system in separate processses.
+
+In order to see if there are any differences in latency between launching the ros nodes in same process with/without the same context, examples thereof are also included.
+Please refer to `src/separate_processes/all_node_same_context.cpp` and `all_nodes_separate_context.cpp`.
+
+In the following, we only describe the scenario with nodes being started in separate processes.
 
 ## Start multiprocesses:
-From the directory `src/separate_processes`
+From the directory `src/separate_processes/`
 
 ```console
 $ <parameters> ros2 launch launch/chain.launch.py
@@ -28,9 +33,17 @@ Check `src/separate_processes/scripts/run_all_benchmarks.sh` for an iteration ov
 
 ## Postprocess Results
 
-Run `calc_e2e_lat.py` in `src/separate_processes/scripts/` to calculate the end to end latency + profiling from the first to the last node. Statistics are calculated afterwards. These are saved in `stats.json` in the respective folder.
+In the following, we will describe how to get results that are comparable to the paper.
 
-Afterwards, the you can collect `stats.json` according to your desired parameter configuration:
+### Calculate End to End latencies from dumped timestamps
+
+Each node dumps in a separate csv absolute timestamps using `CLOCK_MONOTONIC_RAW` upon message receival. Assuming we have `N` nodes in our node chain, the respective csvs are called `<i>-N.csv`, `i` being the 1-based-index of the nodes.
+
+In order to calculate the latencies and profiling from the first node to the `N`-th node, run `calc_e2e_lat.py` in `src/separate_processes/scripts/`. Statistics are calculated afterwards. These are saved in `stats.json` in the respective folder. Pure end to end latencies can be found in `latencies.csv`.
+
+### Pick your desired parameter configuration
+
+Afterwards, you can collect `stats.json` according to your desired parameter configuration:
 
 **collect_lat_csv.py**: Check the argument list. In general, you set the following parameters fix:
 - rmw
@@ -62,6 +75,10 @@ Results are saved in a `.csv` file in the respective `--res-dir` directory. All 
 ```console
 $ bash create_csvs_for_paper.sh <unprocessedResultsDir> <processedResultsDir>
 ```
+
+### Analyze latency distribution + msg drops
+
+If you want to analyze the empirical CDF/PDF of the latencies including message drops, `analyze_package_drops` is your friend. It is used in the same way as `collect_lat_csv.py`. Refer to `create_csvs_for_paper.sh` for use.
 
 # Build Connext on Raspberry Pi
 
