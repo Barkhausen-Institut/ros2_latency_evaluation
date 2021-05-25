@@ -1,4 +1,4 @@
-# PingPongComparison
+# NodeChainSeparateProcesses
 
 https://redmine.adbi.barkhauseninstitut.org/issues/1405
 
@@ -61,4 +61,24 @@ Results are saved in a `.csv` file in the respective `--res-dir` directory. All 
 
 ```console
 $ bash create_csvs_for_paper.sh <unprocessedResultsDir> <processedResultsDir>
+```
+
+# Build Connext on Raspberry Pi
+
+In general, if there are any build problems, refer to [here](https://github.com/ros2/rmw_connextdds/issues/10#issuecomment-800513412).
+
+1. Ensure you have Ubuntu 18.04 installed on Raspi, **not Raspbian!**.
+2. Download armxv8Linux4.4gcc5.4.0 version connext 6.0 from the RTI Download center. 
+3. Follow the instructions of [this link](https://github.com/ros2/rmw_connextdds/issues/10#issuecomment-800513412).
+
+**Ensure that the old rmw connext version is not installed!** In our case, the following error was thrown:
+
+```console
+Starting >>> connext_cmake_module
+--- stderr: connext_cmake_module
+CMake Error at cmake/Modules/FindConnext.cmake:257 (message):
+  RTI code generator doesn't exist with path:
+  '/opt/rti_connext_dds/bin/rtiddsgen'
+Call Stack (most recent call first):
+  CMakeLists.txt:9 (find_package)
 ```
