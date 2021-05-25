@@ -58,7 +58,7 @@ def processDirectory(args, evalType: str):
                 aggregatedErrors = calculateAggPkgErrors(trackingNumbers)
                 plt.xlabel('Tracking Number [#]')
                 plt.ylabel('Aggregated Msg Drop')
-                plt.plot(np.arange(len(aggregatedErrors)), aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
+                plt.plot(trackingNumbers, aggregatedErrors, label=f'len(invalidMsgs)={lenInvalidMsgs}')
 
                 filename = "aggregatedMsgDrop_"
 
