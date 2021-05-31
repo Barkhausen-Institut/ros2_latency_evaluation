@@ -13,11 +13,11 @@ if [ "1" -eq $TEST ]; then
 
     TEST_DURATION=1
 else
-    DDS_BACKENDS='rmw_connextdds'
-    INT_NODES_SET="23"
-    F_PUBLISHER_SET='80 90 100'
-    MSG_SIZE_SET='100kb 500kb'
-    QOS_RELIABILITY_SET='best-effort'
+    DDS_BACKENDS='rmw_connextdds rmw_fastrtps_cpp rmw_cyclonedds_cpp'
+    INT_NODES_SET="$(seq 1 21 2)"
+    F_PUBLISHER_SET='1 10 20 30 40 50 60 70 80 90 100'
+    MSG_SIZE_SET='128b 1kb 10kb 100kb 500kb'
+    QOS_RELIABILITY_SET='best-effort reliable'
 
     TEST_DURATION=60
 fi
@@ -36,21 +36,22 @@ do
         do
             for BACKEND in $DDS_BACKENDS
             do
-		for INT_NODES in $INT_NODES_SET
-		do
-		    timestamp=$(date +%Y-%m-%d_%H-%M-%S)
-		    echo "[$timestamp]:"
-		    command="INT_NODES=$INT_NODES \
-                             PUB_FREQUENCY=$F_PUBLISHER \
-                             MSG_SIZE=$MSG_SIZE \
-                             QOS=$QOS_RELIABILITY \
-                             DURATION=$TEST_DURATION \
-                             RMW_IMPLEMENTATION=$BACKEND \
-                             $BASE"
-		    /bin/bash -c "$command"
-		    echo "[$timestamp]: $command" >> log.txt
-		done
-	    done
+                for INT_NODES in $INT_NODES_SET
+                do
+                            timestamp=$(date +%Y-%m-%d_%H-%M-%S)
+                            echo "[$timestamp]:"
+
+                            command="INT_NODES=$INT_NODES \
+                                PUB_FREQUENCY=$F_PUBLISHER \
+                                MSG_SIZE=$MSG_SIZE \
+                                QOS=$QOS_RELIABILITY \
+                                DURATION=$TEST_DURATION \
+                                RMW_IMPLEMENTATION=$BACKEND \
+                                $BASE"
+                    /bin/bash -c "$command"
+                    echo "[$timestamp]: $command" >> log.txt
+                done
+            done
         done
     done
 done

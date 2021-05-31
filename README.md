@@ -99,3 +99,17 @@ CMake Error at cmake/Modules/FindConnext.cmake:257 (message):
 Call Stack (most recent call first):
   CMakeLists.txt:9 (find_package)
 ```
+
+# Steps to reproduce Paper Results
+
+If you want to reproduce the paper results, proceed as follows:
+
+1. Set kernel parameters as described in the paper.
+2. `cd <ws-root>/src/separate_processes/scripts/`
+3. `bash run_all_benchmarks.sh`
+
+This will take some time, roughly 60h.
+Afterwards, post-process the results:
+
+1. `python calc_e2e_lat.py --directory <parent-directory-of-results>`. **Attention**: Lots of RAM (>16GB) required.
+2. Use the script `create_csvs_for_paper.sh`. The script should be self-explanatory.
