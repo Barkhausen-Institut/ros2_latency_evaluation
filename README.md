@@ -7,6 +7,27 @@ Please refer to `src/separate_processes/all_node_same_context.cpp` and `all_node
 
 In the following, we only describe the scenario with nodes being started in separate processes.
 
+**NOTE: In all subsequent steps we assume that you built our [custom docker image](https://gitlab.com/barkhauseninstitut/corola-papers/ros2latency/customros2foxy).**
+
+# Build
+
+1. `git clone <this-repo>`
+2. `docker run -it --name ros2custom --network host -v <path/to/repo>:/ws barkhauseninstitut/ros2custom:foxy20201211`
+3. `docker start ros2custom`
+4. `docker attach ros2custom`
+5. `cd /ws`
+6. `. /opt/ros/foxy/setup.bash
+7. `python -m venv env`
+8. `colcon build --symlink-install`
+
+# Use
+
+Always source before use:
+
+1. `. /opt/ros/foxy/setup.bash`
+2. `. /ws/install/setup.bash`
+3. . `/ws/env/bin/activate`
+
 ## Start multiprocesses:
 From the directory `src/separate_processes/`
 
@@ -104,9 +125,11 @@ Call Stack (most recent call first):
 
 If you want to reproduce the paper results, proceed as follows:
 
-1. Set kernel parameters as described in the paper.
-2. `cd <ws-root>/src/separate_processes/scripts/`
-3. `bash run_all_benchmarks.sh`
+0. Make sure you are in our docker container as described above.
+1. `cd <ws> && . /opt/ros/foxy/setup.bash && . ws/install/setup.bash`
+2. Set kernel parameters as described in the paper.
+3. `cd <ws-root>/src/separate_processes/scripts/`
+4. `bash run_all_benchmarks.sh`
 
 This will take some time, roughly 60h.
 Afterwards, post-process the results:
