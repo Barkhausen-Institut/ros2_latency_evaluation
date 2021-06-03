@@ -16,7 +16,7 @@ In the following, we only describe the scenario with nodes being started in sepa
 3. `docker start ros2custom`
 4. `docker attach ros2custom`
 5. `cd /ws`
-6. `. /opt/ros/foxy/setup.bash
+6. `. /opt/ros/foxy/setup.bash`
 7. `python -m venv env`
 8. `colcon build --symlink-install`
 
