@@ -124,8 +124,8 @@ Call Stack (most recent call first):
 
 If you want to reproduce the paper results, proceed as follows:
 
-0. Make sure you are in our docker container as described above.
-1. `cd <ws> && . /opt/ros/foxy/setup.bash && . ws/install/setup.bash`
+0. Make sure you are in our docker container as described above and built everything.
+1. `cd <ws> && . /opt/ros/foxy/setup.bash && . <ws>/install/setup.bash`
 2. Set kernel parameters as described in the paper.
 3. `cd <ws-root>/src/separate_processes/scripts/`
 4. `bash run_all_benchmarks.sh`
