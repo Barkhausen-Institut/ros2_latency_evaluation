@@ -1,4 +1,4 @@
-# NodeChainSeparateProcesses
+# Purpose
 
 This is the official repository for benchmarking a ros2 node system in separate processses.
 
@@ -7,7 +7,7 @@ Please refer to `src/separate_processes/all_node_same_context.cpp` and `all_node
 
 In the following, we only describe the scenario with nodes being started in separate processes.
 
-**NOTE: In all subsequent steps we assume that you built our [custom docker image](https://gitlab.com/barkhauseninstitut/corola-papers/ros2latency/customros2foxy).**
+**NOTE: In all subsequent steps we assume that you built our [custom docker image](https://github.com/Barkhausen-Institut/ros2_latency_evaluation_docker).**
 
 # Build
 
