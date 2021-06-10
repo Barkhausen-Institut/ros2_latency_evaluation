@@ -13,13 +13,11 @@ In the following, we only describe the scenario with nodes being started in sepa
 
 1. `git clone <this-repo>`
 2. `docker run -it --name ros2custom --network host -v <path/to/repo>:/ws barkhauseninstitut/ros2custom:foxy20201211`
-3. `docker start ros2custom`
-4. `docker attach ros2custom`
-5. `cd /ws`
-6. `. /opt/ros/foxy/setup.bash`
-7. `python -m venv env`
-8. `pip install -r requirements.txt`
-9. `colcon build --symlink-install`
+3. `cd /ws`
+4. `. /opt/ros/foxy/setup.bash`
+5. `python -m venv env`
+6. `pip install -r requirements.txt`
+7. `colcon build --symlink-install`
 
 # Use
 
