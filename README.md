@@ -18,7 +18,8 @@ In the following, we only describe the scenario with nodes being started in sepa
 5. `cd /ws`
 6. `. /opt/ros/foxy/setup.bash`
 7. `python -m venv env`
-8. `colcon build --symlink-install`
+8. `pip install -r requirements.txt`
+9. `colcon build --symlink-install`
 
 # Use
 
@@ -26,7 +27,7 @@ Always source before use:
 
 1. `. /opt/ros/foxy/setup.bash`
 2. `. /ws/install/setup.bash`
-3. . `/ws/env/bin/activate`
+3. `. /ws/env/bin/activate`
 
 ## Start multiprocesses:
 From the directory `src/separate_processes/`
